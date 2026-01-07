@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint and Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for required files
+        run: |
+          echo "Checking required files..."
+          
+          # Check root files
+          test -f README.md || (echo "Missing README.md" && exit 1)
+          test -f LICENSE || (echo "Missing LICENSE" && exit 1)
+          test -f AGENTS.md || (echo "Missing AGENTS.md" && exit 1)
+          test -L CLAUDE.md || (echo "Missing CLAUDE.md symlink" && exit 1)
+          
+          # Check marketplace config
+          test -f .claude-plugin/marketplace.json || (echo "Missing .claude-plugin/marketplace.json" && exit 1)
+          
+          # Check plugin config
+          test -f plugins/webflow-skills/.claude-plugin/plugin.json || (echo "Missing plugin.json" && exit 1)
+          
+          echo "All required files present ✓"
+
+      - name: Validate skill structure
+        run: |
+          echo "Validating skills..."
+          
+          for skill_dir in plugins/webflow-skills/skills/*/; do
+            skill_name=$(basename "$skill_dir")
+            echo "Checking skill: $skill_name"
+            
+            # Check for SKILL.md
+            test -f "${skill_dir}SKILL.md" || (echo "Missing SKILL.md in $skill_name" && exit 1)
+            
+            # Check SKILL.md has required frontmatter
+            if ! grep -q "^name:" "${skill_dir}SKILL.md"; then
+              echo "Missing 'name' in $skill_name/SKILL.md frontmatter"
+              exit 1
+            fi
+            
+            if ! grep -q "^description:" "${skill_dir}SKILL.md"; then
+              echo "Missing 'description' in $skill_name/SKILL.md frontmatter"
+              exit 1
+            fi
+            
+            echo "  ✓ $skill_name valid"
+          done
+          
+          echo "All skills validated ✓"
+
+  count-skills:
+    name: Count Skills
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Count and list skills
+        run: |
+          echo "## Skills in Repository" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          count=0
+          for skill_dir in plugins/webflow-skills/skills/*/; do
+            if [ -f "${skill_dir}SKILL.md" ]; then
+              skill_name=$(basename "$skill_dir")
+              echo "- $skill_name" >> $GITHUB_STEP_SUMMARY
+              count=$((count + 1))
+            fi
+          done
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Total: $count skills**" >> $GITHUB_STEP_SUMMARY
