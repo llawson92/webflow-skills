@@ -2,6 +2,6 @@
   "name": "webflow-skills",
   "description": "Skills for working with Webflow sites - CMS management, publishing, QA, and site operations",
   "version": "1.0.0",
-  "skills": "skills/"
+  "skills": "./skills/"
 }
 
