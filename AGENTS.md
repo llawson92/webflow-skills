@@ -8,9 +8,6 @@ You have access to skills for working with Webflow sites through the Webflow MCP
 - **bulk-cms-update**: Create or update multiple CMS items with validation
 - **cms-collection-setup**: Create new collections from schema definitions
 
-### Quality Assurance
-- **pre-publish-qa**: Check for issues before publishing
-
 ### Publishing
 - **safe-publish**: Plan → Confirm → Publish workflow
 
