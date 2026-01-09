@@ -16,9 +16,9 @@ You have access to skills for working with Webflow sites through the Webflow MCP
 - **safe-publish**: Plan → Confirm → Publish workflow
 
 ### Site Management
-- **site-inventory**: Export site structure
+- **site-audit**: Comprehensive site audit with health scoring
 - **site-diagnostics**: Troubleshoot issues
-- **asset-audit**: Analyze assets
+- **asset-audit**: Analyze assets for SEO optimization
 - **custom-code-management**: Manage scripts and tracking code
 
 ## Safety Rules

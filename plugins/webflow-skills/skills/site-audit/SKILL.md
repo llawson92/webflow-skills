@@ -1,11 +1,11 @@
 ---
-name: site-inventory
-description: Export a complete inventory of a Webflow site including all pages, CMS collections, and item counts. Use for migration planning, documentation, or understanding site structure.
+name: site-audit
+description: Comprehensive audit of a Webflow site including pages, CMS collections, health scoring, and actionable insights. Use for site analysis, migration planning, or understanding site structure.
 ---
 
-# Site Inventory
+# Site Audit
 
-Export a complete inventory of a Webflow site's structure with detailed analysis and multiple export formats.
+Comprehensive audit of a Webflow site's structure, content health, and quality with detailed analysis and multiple export formats.
 
 ## Important Note
 
@@ -98,7 +98,7 @@ Give me a complete inventory of my site.
 
 **Step 1: Initial Report (Standard Inventory)**
 ```
-📊 Site Inventory: MCP Demo#1
+📊 Site Audit: MCP Demo#1
 
 **Site Details:**
 - Site ID: 6924868ede9d3fbbc3195eb0
@@ -295,7 +295,7 @@ Suggest improvements based on:
 
 **Markdown Export:**
 ```markdown
-# Site Inventory: [Site Name]
+# Site Audit: [Site Name]
 
 ## Site Information
 - ID: [site-id]
