@@ -10,14 +10,12 @@ You have access to skills for working with Webflow sites through the Webflow MCP
 
 ### Quality Assurance
 - **pre-publish-qa**: Check for issues before publishing
-- **seo-metadata-check**: Audit SEO metadata across pages
 
 ### Publishing
 - **safe-publish**: Plan → Confirm → Publish workflow
 
 ### Site Management
 - **site-audit**: Comprehensive site audit with health scoring
-- **site-diagnostics**: Troubleshoot issues
 - **asset-audit**: Analyze assets for SEO optimization
 - **custom-code-management**: Manage scripts and tracking code
 

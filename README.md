@@ -53,9 +53,6 @@ Copy the `skills/` directory to your agent's skills location, or reference the `
 | cms-collection-setup | Create CMS collections from schema definitions |
 | asset-audit | Analyze assets for optimization opportunities |
 | custom-code-management | Safely manage tracking scripts and custom code |
-| seo-metadata-check | Audit pages for SEO completeness |
-| page-content-update | Update page metadata with preview |
-| site-diagnostics | Gather site status for troubleshooting |
 
 ## Repository Structure
 
