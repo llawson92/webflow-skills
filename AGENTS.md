@@ -11,6 +11,7 @@ These skills require the Webflow MCP (Model Context Protocol) server to be insta
 ### Installation Steps
 
 1. **Install Webflow MCP Server**
+
    ```bash
    # Installation instructions depend on your MCP setup
    # Follow Webflow's MCP installation guide at:
@@ -31,6 +32,7 @@ These skills require the Webflow MCP (Model Context Protocol) server to be insta
 ### What Webflow MCP Provides
 
 The Webflow MCP server enables:
+
 - ✅ Access to all Webflow sites in your account
 - ✅ CMS operations (collections, items, fields)
 - ✅ Page operations (content, metadata, settings)
@@ -40,6 +42,7 @@ The Webflow MCP server enables:
 - ✅ Custom code management
 
 **Without Webflow MCP installed, you cannot:**
+
 - ❌ List or access Webflow sites
 - ❌ Read or modify CMS content
 - ❌ Update pages or publish changes
@@ -48,6 +51,7 @@ The Webflow MCP server enables:
 ### Troubleshooting Installation
 
 **Issue: "Webflow MCP server not found"**
+
 ```
 Problem: MCP server not installed or not running
 Solution:
@@ -58,6 +62,7 @@ Solution:
 ```
 
 **Issue: "Authentication failed"**
+
 ```
 Problem: Invalid or missing Webflow API token
 Solution:
@@ -68,6 +73,7 @@ Solution:
 ```
 
 **Issue: "No sites returned"**
+
 ```
 Problem: API token doesn't have access to sites
 Solution:
@@ -82,6 +88,7 @@ Solution:
 ## Available Skills
 
 ### Content Operations
+
 - **bulk-cms-update**: Create or update multiple CMS items with validation and preview
   - Use when: Batch creating/updating blog posts, products, team members
   - Requires: Collection name, item data
@@ -99,12 +106,14 @@ Solution:
   - Output: Architecture recommendations, performance optimization, field selection guidance
 
 ### Publishing
+
 - **safe-publish**: Plan → Confirm → Publish workflow with verification
   - Use when: Publishing site changes to production
   - Process: Shows what changed → Requires "publish" confirmation → Verifies deployment
   - Safety: Explicit confirmation required (must type "publish")
 
 ### Site Management & Auditing
+
 - **site-audit**: Comprehensive site audit with health scoring and actionable insights
   - Use when: Assessing overall site health, preparing for launch, identifying issues
   - Analyzes: SEO metadata, CMS content quality, page structure, site configuration
@@ -128,6 +137,7 @@ Solution:
   - Type: Read-only (no modifications)
 
 ### Design & Naming Systems
+
 - **flowkit-naming**: Apply Webflow's official FlowKit CSS naming system
   - Use when: Building components with FlowKit conventions, auditing class names
   - Requires: Webflow Designer connection
@@ -135,6 +145,7 @@ Solution:
   - Safety: Preview + confirmation for class creation/updates
 
 ### Developer Tools
+
 - **custom-code-management**: Safely manage tracking scripts and custom code
   - Use when: Adding analytics, tracking pixels, third-party integrations
   - Manages: Site-level custom code, inline scripts (max 2000 chars)
@@ -145,12 +156,14 @@ Solution:
 When working with Webflow skills, these MCP tools are available:
 
 ### Core Site Operations
+
 - `webflow_guide_tool` - **Always call first** to get best practices
 - `sites_list` - List all accessible sites
 - `sites_get` - Get detailed site information
 - `sites_publish` - Publish site to specified domains
 
 ### CMS Operations
+
 - `collections_list` - List all CMS collections
 - `collections_get` - Get collection schema and fields
 - `collections_create` - Create new collections
@@ -163,12 +176,14 @@ When working with Webflow skills, these MCP tools are available:
 - `collections_items_delete_item` - Delete collection item
 
 ### Field Management
+
 - `collection_fields_create_static` - Create static fields (text, number, date, etc.)
 - `collection_fields_create_option` - Create option fields (dropdowns)
 - `collection_fields_create_reference` - Create reference/multi-reference fields
 - `collection_fields_update` - Update field properties
 
 ### Page Operations
+
 - `pages_list` - List all pages in site
 - `pages_get_metadata` - Get page SEO settings
 - `pages_update_page_settings` - Update page metadata, SEO, slug
@@ -176,6 +191,7 @@ When working with Webflow skills, these MCP tools are available:
 - `pages_update_static_content` - Update page content (requires Designer)
 
 ### Designer Tools (requires Designer connection)
+
 - `element_tool` - Get/select elements, update attributes, styles, links
 - `element_builder` - Create elements (max 3 levels deep)
 - `de_component_tool` - Manage components and instances
@@ -186,24 +202,28 @@ When working with Webflow skills, these MCP tools are available:
 - `de_learn_more_about_styles` - Reference for supported styles
 
 ### Scripts & Custom Code
+
 - `site_registered_scripts_list` - List registered scripts
 - `site_applied_scripts_list` - Get applied scripts
 - `add_inline_site_script` - Add inline scripts (max 2000 chars)
 - `delete_all_site_scripts` - Remove all custom scripts
 
 ### Helper Tools
+
 - `ask_webflow_ai` - Ask questions about Webflow API
 - `get_image_preview` - Preview images from URLs
 
 ## Skill Invocation Patterns
 
 ### Pattern 1: User Explicitly Requests Skill
+
 ```
 User: "Run a site audit on my Webflow site"
 → Invoke: site-audit skill
 ```
 
 ### Pattern 2: Task Matches Skill Description
+
 ```
 User: "I need to add 20 blog posts to my site"
 → Invoke: bulk-cms-update skill
@@ -216,12 +236,14 @@ User: "Help me structure my CMS for a recipe site"
 ```
 
 ### Pattern 3: User References Skill by Name
+
 ```
 User: "Use the safe-publish skill to publish my site"
 → Invoke: safe-publish skill
 ```
 
 ### When NOT to Invoke Skills
+
 - Simple one-off operations (use MCP tools directly)
 - User asks general questions about Webflow (answer directly)
 - Task requires different approach than available skills
@@ -229,25 +251,31 @@ User: "Use the safe-publish skill to publish my site"
 ## Important Usage Guidelines
 
 ### 1. Site ID Requirements
+
 - **Never assume site IDs** - Always use `sites_list` to fetch available sites
 - **Ask user to select** - If multiple sites, let user choose by name or number
 - **Confirm site name** - Verify you're working on the correct site
 
 ### 2. Context Parameter (Required)
+
 All Webflow MCP tools require a `context` parameter:
+
 - **Length**: 15-25 words (count carefully)
 - **Perspective**: Third-person (not "I", "we", or "you")
 - **Content**: Explain what action is being performed and why
 - **Example**: "Retrieving all CMS collections from the site to analyze content structure and identify optimization opportunities for improved performance."
 
 ### 3. Designer Connection
+
 Some operations require Webflow Designer:
+
 - Static page content updates
 - Element creation and styling
 - Component management
 - Variable management
 
 **If Designer required but not connected:**
+
 ```
 ⚠️ Designer Connection Required
 
@@ -263,14 +291,18 @@ Note: CMS operations can proceed without Designer.
 ```
 
 ### 4. Batch Processing
+
 For large operations:
+
 - **CMS items**: Process in batches of 50
 - **Pages**: Process in batches of 10-20
 - **Links**: Validate in batches of 100
 - **Always show progress** for batches
 
 ### 5. Draft vs Live Operations
+
 Choose the right endpoint:
+
 - **Draft operations**: `*_items`, `*_item` (requires manual publish)
 - **Live operations**: `*_items_live`, `*_item_live` (publishes immediately)
 - **Publishing**: Use `publish_items` to publish drafts
@@ -278,9 +310,11 @@ Choose the right endpoint:
 ## Safety Rules
 
 ### Mandatory Preview + Confirmation
+
 Always follow this pattern for write operations:
 
 **1. Discovery Phase:**
+
 ```
 🔍 [Operation Name]
 
@@ -289,6 +323,7 @@ Analyzing current state...
 ```
 
 **2. Preview Phase:**
+
 ```
 📋 Preview: [Operation Name]
 
@@ -299,6 +334,7 @@ Analyzing current state...
 ```
 
 **3. Execution Phase:**
+
 ```
 🔄 Applying changes...
 
@@ -308,6 +344,7 @@ Progress: ████████████████████ 100% (X/Y
 ```
 
 **4. Confirmation Phase:**
+
 ```
 ✅ [Operation] Complete
 
@@ -320,14 +357,18 @@ Summary:
 ```
 
 ### Preview Requirements
+
 Before ANY write operation, show:
+
 1. **What will change** - Specific items and fields
 2. **Validation warnings** - Any issues detected
 3. **Impact assessment** - How many items affected
 4. **Confirmation prompt** - Clear action required
 
 ### Granular Approval
+
 For bulk operations, allow selective approval:
+
 ```
 Which items would you like to update?
 - Type "all" to proceed with all
@@ -338,13 +379,16 @@ Example: Typing "2,4" will update all except items 2 and 4
 ```
 
 ### Error Handling
+
 When errors occur:
+
 1. **Explain clearly** - What went wrong and why
 2. **Suggest recovery** - Actionable steps to resolve
 3. **Report partial success** - Separate successes from failures
 4. **Offer retry** - For failed operations
 
 Example:
+
 ```
 ❌ 3 Items Failed
 
@@ -364,6 +408,7 @@ Would you like to:
 ## Response Format Standards
 
 ### Read Operations (Audits, Analysis, Inventory)
+
 ```
 📊 [Report Title]: [Site Name]
 
@@ -389,6 +434,7 @@ Would you like to:
 ```
 
 ### Write Operations (Updates, Creates, Fixes)
+
 ```
 📋 Preview: [Operation Name]
 
@@ -413,6 +459,7 @@ Which items would you like to proceed with?
 ```
 
 ### Success Confirmation
+
 ```
 ✅ [Operation] Complete
 
@@ -433,7 +480,9 @@ Summary:
 ## Visual Formatting Conventions
 
 ### Icons
+
 Use consistently:
+
 - 🔍 Discovery/Search
 - 📋 Preview/Planning
 - 🔄 Processing/In Progress
@@ -449,7 +498,9 @@ Use consistently:
 - 🟢 Low Priority/Good
 
 ### Progress Indicators
+
 For long operations:
+
 ```
 🔄 Processing...
 
@@ -458,7 +509,9 @@ Elapsed: 3.2 seconds
 ```
 
 ### Tree Structure
+
 For hierarchical data:
+
 ```
 Collection Name (count)
 ├── Item 1
@@ -470,7 +523,9 @@ Collection Name (count)
 ```
 
 ### Tables
+
 For structured data:
+
 ```
 | # | Name | Status | Details |
 |---|------|--------|---------|
@@ -482,6 +537,7 @@ For structured data:
 ## Best Practices
 
 ### 1. Always Start with webflow_guide_tool
+
 ```
 Before using any Webflow MCP tool:
 1. Call webflow_guide_tool first
@@ -490,6 +546,7 @@ Before using any Webflow MCP tool:
 ```
 
 ### 2. Validate Before Modifying
+
 ```
 For any write operation:
 1. Read current state
@@ -502,6 +559,7 @@ For any write operation:
 ```
 
 ### 3. Handle Large Operations
+
 ```
 If >50 items to process:
 1. Inform user of batch processing
@@ -512,6 +570,7 @@ If >50 items to process:
 ```
 
 ### 4. Provide Context
+
 ```
 Good context examples:
 
@@ -525,6 +584,7 @@ Good context examples:
 ```
 
 ### 5. Report Thoroughly
+
 ```
 After any operation, report:
 - What was done
@@ -537,6 +597,7 @@ After any operation, report:
 ## Examples
 
 ### Example 1: Running Site Audit
+
 ```
 User: "Audit my Webflow site"
 
@@ -549,6 +610,7 @@ User: "Audit my Webflow site"
 ```
 
 ### Example 2: Bulk CMS Update
+
 ```
 User: "Add these 5 blog posts: [data]"
 
@@ -564,6 +626,7 @@ User: "Add these 5 blog posts: [data]"
 ```
 
 ### Example 3: Link Checking
+
 ```
 User: "Check for broken links"
 
@@ -578,6 +641,7 @@ User: "Check for broken links"
 ```
 
 ### Example 4: CMS Architecture Guidance
+
 ```
 User: "How should I structure my CMS for a recipe site?"
 
@@ -599,6 +663,7 @@ User: "How should I structure my CMS for a recipe site?"
 ## Troubleshooting
 
 ### Issue: "Cannot find site"
+
 ```
 Problem: Site ID incorrect or site not accessible
 Solution:
@@ -608,6 +673,7 @@ Solution:
 ```
 
 ### Issue: "Designer not connected"
+
 ```
 Problem: Operation requires Designer but it's not connected
 Solution:
@@ -618,6 +684,7 @@ Solution:
 ```
 
 ### Issue: "Rate limit exceeded"
+
 ```
 Problem: Too many API calls in short time
 Solution:
@@ -628,6 +695,7 @@ Solution:
 ```
 
 ### Issue: "Validation failed"
+
 ```
 Problem: Data doesn't meet requirements
 Solution:
@@ -637,32 +705,6 @@ Solution:
 4. Offer to fix automatically if possible
 5. Let user edit and retry
 ```
-
-## Skill Development
-
-When creating or improving Webflow skills, follow:
-**[SKILL_IMPROVEMENT_RULES.md](../SKILL_IMPROVEMENT_RULES.md)**
-
-Key requirements:
-- Important Note section with all Webflow MCP tools
-- Phase-based instructions (3-5 phases)
-- Multi-step examples with real data
-- Comprehensive guidelines organized by phase
-- Production checklist
-- Error handling and edge cases
-
-Reference skills:
-- `asset-audit` - Write skill with validation
-- `site-audit` - Read skill with health scoring
-- `cms-best-practices` - Consultative skill
-- `link-checker` - Hybrid read/write with granular approval
-
-## Additional Resources
-
-- **Webflow Developer Docs**: https://developers.webflow.com
-- **MCP Documentation**: https://developers.webflow.com/mcp
-- **Skill Format Specification**: Agent Skills open format
-- **API Reference**: https://developers.webflow.com/data/reference
 
 ## Quick Reference
 
