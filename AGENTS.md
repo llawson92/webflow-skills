@@ -7,7 +7,6 @@ You have access to skills for working with Webflow sites through the Webflow MCP
 ### Content Operations
 - **bulk-cms-update**: Create or update multiple CMS items with validation
 - **cms-collection-setup**: Create new collections from schema definitions
-- **page-content-update**: Update page metadata safely
 
 ### Quality Assurance
 - **pre-publish-qa**: Check for issues before publishing
