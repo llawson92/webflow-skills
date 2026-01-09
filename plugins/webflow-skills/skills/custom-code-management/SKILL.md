@@ -1,58 +1,49 @@
 ---
 name: custom-code-management
-description: Review, add, or update custom code on a Webflow site. Manages analytics scripts, tracking pixels, and other custom code in site head/footer.
+description: Add, review, or remove inline custom scripts on a Webflow site (up to 10,000 chars). Use for analytics, tracking pixels, chat widgets, or any custom JavaScript.
 ---
 
 # Custom Code Management
 
-Manage custom code on a Webflow site.
+## Concepts
+
+Webflow custom code: **register** (store script) → **apply** (attach to site). Inline scripts only via MCP (max 10,000 chars).
+
+## Important note
+
+**ALWAYS use Webflow MCP tools for all operations:**
+Use the following tools for all operations:
+- `site_registered_scripts_list` / `site_applied_scripts_list` - List scripts
+- `add_inline_site_script` - Register inline script (no `<script>` tags)
+- `delete_all_site_scripts` - Remove ALL scripts (no selective delete)
 
 ## Instructions
 
-1. **Get site**: Identify the target site
-2. **Review existing**: List all custom code with annotations
-3. **For changes**: Show preview and require confirmation
-4. **Apply changes**: Update the custom code
-5. **Report**: Confirm what was changed
+### View Scripts
+1. Call `sites_list` if needed, then call both list tools in parallel
+2. Display registration and application status
 
-## Examples
+### Add Script
+1. Gather: name, code, location (header/footer)
+2. Validate: under 10,000 chars, no `<script>` tags
+3. Preview with character count, require **"add"** to confirm
+4. Call `add_inline_site_script` with displayName, sourceCode, version, location, canCopy
+5. Remind user to publish
 
-**User prompt:**
-```
-Show me all custom code on my site.
-```
+### Remove Scripts
+1. List current scripts
+2. Warn: removes ALL scripts (no selective delete)
+3. Require **"delete all"** to confirm
+4. Remind user to publish
 
-**Response format:**
-```
-📋 Custom Code: Company Site
+## Constraints
 
-Site Head:
-├── Google Analytics (GA4)
-│   └── gtag.js with ID G-XXXXX
-├── Custom Fonts
-│   └── Inter, Playfair Display
-└── Meta verification tag
+- Max 10,000 characters per script
+- Do NOT include `<script>` tags (Webflow adds them)
+- displayName + version must be unique
+- Site-level only (no page-specific via MCP)
+- Hosted scripts not available via MCP
 
-Site Footer:
-├── Intercom chat widget
-└── Cookie consent script
-```
+## Response Format
 
-**For adding code:**
-```
-📋 Preview: Add Script
-
-Location: Site Footer
-Code:
-<script src="https://widget.example.com/v2.js" async></script>
-
-⚠️ Type "add" to proceed.
-```
-
-## Guidelines
-
-- Annotate known scripts (analytics, chat, etc.)
-- Show location (head vs footer, site vs page)
-- Require confirmation for changes
-- Validate syntax before applying
-
+After adding a script, respond with the script name, location, and version. Suggest using the `safe-publish` skill to publish changes.
