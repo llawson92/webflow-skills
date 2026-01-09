@@ -87,10 +87,11 @@ Solution:
   - Requires: Collection name, item data
   - Safety: Preview + confirmation required
 
-- **cms-collection-setup**: Create new CMS collections from schema definitions
-  - Use when: Setting up new content types (blog, products, portfolio)
-  - Requires: Collection schema with field definitions
-  - Safety: Preview + confirmation required
+- **cms-collection-setup**: Create new CMS collections with custom fields and relationships
+  - Use when: Setting up new content types (blog posts, products, team members, portfolios)
+  - Supports: 16 field types (static, option, reference/multi-reference), relationship management, multi-collection setup
+  - Features: Validates schemas, checks plan limits, handles dependencies, creates fields in correct order
+  - Safety: Complete preview with validation, explicit confirmation required
 
 - **cms-best-practices**: Expert guidance on CMS architecture, relationships, and optimization
   - Use when: Planning CMS structure, optimizing performance, troubleshooting relationships
