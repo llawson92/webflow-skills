@@ -82,7 +82,7 @@ Copy the `skills/` directory to your agent's skills location, or reference the `
 | bulk-cms-update | Create or update multiple CMS items with validation and preview |
 | safe-publish | Plan-confirm-publish workflow with verification |
 | site-audit | Comprehensive site audit with health scoring and actionable insights |
-| cms-collection-setup | Create CMS collections from schema definitions |
+| cms-collection-setup | Create CMS collections with custom fields, relationships, and validation |
 | asset-audit | Analyze assets for optimization opportunities |
 | link-checker | Find and fix broken or insecure links across site including CMS content |
 | custom-code-management | Safely manage tracking scripts and custom code |
