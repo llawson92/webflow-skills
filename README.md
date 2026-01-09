@@ -2,6 +2,39 @@
 
 Agent skills for working with Webflow sites, following the [Agent Skills](https://github.com/anthropics/agent-skills) open format.
 
+## Prerequisites
+
+**⚠️ IMPORTANT: Webflow MCP Server Required**
+
+These skills require the [Webflow MCP (Model Context Protocol) server](https://developers.webflow.com/mcp) to be installed and configured. The Webflow MCP server provides the connection between Claude Code and your Webflow sites.
+
+### What You Need
+
+1. **Webflow Account** - Active Webflow account with sites
+2. **Webflow API Token** - Generated from your Webflow account settings
+3. **Webflow MCP Server** - Installed and configured in your MCP environment
+4. **Claude Code** - With MCP support enabled
+
+### Quick Setup
+
+```bash
+# 1. Install Webflow MCP server
+# Follow the installation guide at:
+# https://developers.webflow.com/mcp
+
+# 2. Configure with your Webflow API token
+# Add your token to the MCP configuration
+
+# 3. Verify connection
+# Try listing your sites to confirm it works
+```
+
+Without the Webflow MCP server, these skills cannot access your Webflow sites and will not function.
+
+For detailed installation and configuration instructions, visit the [Webflow MCP Documentation](https://developers.webflow.com/mcp).
+
+---
+
 ## Installation
 
 ### Claude Code (via Marketplace)
@@ -51,6 +84,7 @@ Copy the `skills/` directory to your agent's skills location, or reference the `
 | site-audit | Comprehensive site audit with health scoring and actionable insights |
 | cms-collection-setup | Create CMS collections from schema definitions |
 | asset-audit | Analyze assets for optimization opportunities |
+| link-checker | Find and fix broken or insecure links across site including CMS content |
 | custom-code-management | Safely manage tracking scripts and custom code |
 
 ## Repository Structure
