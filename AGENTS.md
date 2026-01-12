@@ -131,11 +131,6 @@ Solution:
   - Output: Link health score, automatic fixes (HTTP→HTTPS), manual review items
   - Safety: Preview + granular approval for fixes
 
-- **site-inventory**: Export complete site structure and CMS inventory
-  - Use when: Documentation, migration planning, site audits
-  - Output: Pages list, CMS collections with schemas, item counts
-  - Type: Read-only (no modifications)
-
 ### Design & Naming Systems
 
 - **flowkit-naming**: Apply Webflow's official FlowKit CSS naming system

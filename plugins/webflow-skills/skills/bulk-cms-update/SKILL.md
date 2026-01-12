@@ -48,6 +48,12 @@ Create or update multiple CMS items with comprehensive validation, granular appr
 7. **Parse and normalize**: Convert user data into structured format
 8. **Fetch existing items** (if updates involved): Use Webflow MCP's `collections_items_list_items` to get current data
 
+   **IMPORTANT - Efficient Item Lookup:**
+   - When searching for specific items by name, ALWAYS use the `name` parameter to filter (e.g., `name: "Pikachu"`)
+   - When searching by slug, use the `slug` parameter to filter
+   - NEVER fetch all items first and then search through the results - this wastes API calls and tokens
+   - Only fetch the full list when you need to display all items or don't know which specific items to target
+
 ### Phase 3: Validation & Analysis
 9. **Validate all data**:
    - **Field names**: Check all field names exist in schema
@@ -354,6 +360,25 @@ name,slug,featured
 - Infer missing optional fields
 - Ask for clarification if ambiguous
 - Never assume required field values
+
+**Efficient Item Lookup:**
+When fetching existing items for updates, use filter parameters to minimize API calls:
+
+```
+# Good - Filter by name when you know the item name
+collections_items_list_items(collection_id, name: "Pikachu")
+
+# Good - Filter by slug when you know the slug
+collections_items_list_items(collection_id, slug: "pikachu")
+
+# Bad - Fetching all items then searching through results
+collections_items_list_items(collection_id)  # Returns 100 items
+# Then manually searching for "Pikachu" in results...
+```
+
+- ALWAYS use `name` or `slug` parameters when searching for specific items
+- This reduces API calls, response size, and token usage
+- Only fetch unfiltered lists when displaying all items or when the target is unknown
 
 ### Phase 3: Validation Rules
 
