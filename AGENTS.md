@@ -12,22 +12,19 @@ These skills require the Webflow MCP (Model Context Protocol) server to be insta
 
 1. **Install Webflow MCP Server**
 
+   Add the Webflow MCP server to Claude Code:
+
    ```bash
-   # Installation instructions depend on your MCP setup
-   # Follow Webflow's MCP installation guide at:
-   # https://developers.webflow.com/mcp
+   claude mcp add --transport http webflow https://mcp.webflow.com/mcp
    ```
 
-2. **Configure Authentication**
-   - Obtain Webflow API token from your Webflow account
-   - Configure MCP server with your credentials
-   - Verify connection by listing sites
+2. **Authenticate with Webflow**
+
+   Follow the authentication prompts to connect your Webflow account.
 
 3. **Verify Installation**
-   ```bash
-   # Test that Webflow MCP is accessible
-   # Try calling sites_list to confirm connection
-   ```
+
+   Test the connection by calling `sites_list` to confirm access to Webflow sites.
 
 ### What Webflow MCP Provides
 
@@ -55,7 +52,7 @@ The Webflow MCP server enables:
 ```
 Problem: MCP server not installed or not running
 Solution:
-1. Follow installation guide at developers.webflow.com/mcp
+1. Follow installation guide at https://developers.webflow.com/mcp
 2. Restart Claude Code after installation
 3. Verify MCP server is running
 4. Check MCP server logs for errors
