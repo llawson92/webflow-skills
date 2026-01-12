@@ -1,6 +1,6 @@
 # Webflow Skills
 
-Agent skills for working with Webflow sites, following the [Agent Skills](https://github.com/anthropics/agent-skills) open format.
+Production-ready agent skills for managing Webflow CMS content, auditing site health, optimizing assets, and safely publishing changes through Claude Code, following the [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) open format.
 
 ## Prerequisites
 
@@ -11,23 +11,26 @@ These skills require the [Webflow MCP (Model Context Protocol) server](https://d
 ### What You Need
 
 1. **Webflow Account** - Active Webflow account with sites
-2. **Webflow API Token** - Generated from your Webflow account settings
-3. **Webflow MCP Server** - Installed and configured in your MCP environment
-4. **Claude Code** - With MCP support enabled
+2. **Webflow MCP Server** - Installed and configured in your MCP environment
+3. **Claude Code** - With MCP support enabled
 
 ### Quick Setup
 
-```bash
-# 1. Install Webflow MCP server
-# Follow the installation guide at:
-# https://developers.webflow.com/mcp
+1. **Configure Webflow MCP in Claude Code**
 
-# 2. Configure with your Webflow API token
-# Add your token to the MCP configuration
+   Add the Webflow MCP server to your Claude Code settings:
 
-# 3. Verify connection
-# Try listing your sites to confirm it works
-```
+   ```bash
+   claude mcp add --transport http webflow https://mcp.webflow.com/mcp
+   ```
+
+2. **Authenticate with Webflow**
+
+   Follow the authentication prompts to connect your Webflow account.
+
+3. **Verify Connection**
+
+   Test the connection by asking Claude to list your Webflow sites.
 
 Without the Webflow MCP server, these skills cannot access your Webflow sites and will not function.
 
@@ -77,79 +80,23 @@ Copy the `skills/` directory to your agent's skills location, or reference the `
 
 ## Available Skills
 
-| Skill | Description |
-|-------|-------------|
-| bulk-cms-update | Create or update multiple CMS items with validation and preview |
-| safe-publish | Plan-confirm-publish workflow with verification |
-| site-audit | Comprehensive site audit with health scoring and actionable insights |
-| cms-collection-setup | Create CMS collections with custom fields, relationships, and validation |
-| asset-audit | Analyze assets for optimization opportunities |
-| link-checker | Find and fix broken or insecure links across site including CMS content |
-| custom-code-management | Safely manage tracking scripts and custom code |
+### Content Management
+- **bulk-cms-update** - Batch create/update CMS items with validation and preview
+- **cms-collection-setup** - Create collections with custom fields and relationships (supports 16 field types)
 
-## Repository Structure
+### Site Health & Optimization
+- **site-audit** - Comprehensive health check with scoring (0-100) and prioritized recommendations
+- **asset-audit** - Identify optimization opportunities for images and files
+- **link-checker** - Scan and fix broken/insecure links across pages and CMS content
 
-```
-webflow-skills/
-├── .claude-plugin/
-│   └── marketplace.json      # Marketplace manifest
-├── plugins/
-│   └── webflow-skills/
-│       ├── .claude-plugin/
-│       │   └── plugin.json   # Plugin manifest
-│       └── skills/
-│           ├── bulk-cms-update/
-│           │   └── SKILL.md
-│           ├── safe-publish/
-│           │   └── SKILL.md
-│           └── ...
-├── AGENTS.md                 # Agent-facing documentation
-├── CLAUDE.md                 # Symlink to AGENTS.md
-└── README.md                 # This file
-```
+### Publishing & Code
+- **safe-publish** - Preview → Confirm → Publish workflow with verification
+- **custom-code-management** - Manage tracking scripts and custom code safely
 
-## Creating New Skills
+## Resources
 
-Skills follow the [Agent Skills specification](https://github.com/anthropics/agent-skills). Each skill requires a `SKILL.md` file with YAML frontmatter.
-
-### Skill Template
-
-Create a new directory under `plugins/webflow-skills/skills/`:
-
-```
-plugins/webflow-skills/skills/my-skill/
-└── SKILL.md
-```
-
-`SKILL.md` format:
-
-```markdown
----
-name: my-skill
-description: A clear description of what this skill does and when to use it.
----
-
-# My Skill Name
-
-## Instructions
-
-Step-by-step guidance for the agent.
-
-## Examples
-
-Concrete examples showing expected input/output.
-
-## Guidelines
-
-- Specific rules to follow
-- Edge cases to handle
-```
-
-### Naming Conventions
-
-- `name`: 1-64 characters, lowercase alphanumeric with hyphens only
-- `description`: Up to 1024 characters, include trigger keywords
-- Keep `SKILL.md` under 500 lines; split longer content into reference files
+- **Prompt Library**: [Ready-to-use example prompts](https://developers.webflow.com/mcp/v1.0.0/examples) to get started quickly
+- **Available Tools**: [Complete tool reference](https://developers.webflow.com/mcp/v1.0.0/reference/how-it-works#available-tools) for all Webflow MCP capabilities
 
 ## License
 
