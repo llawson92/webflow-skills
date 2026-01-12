@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "webflow-skills",
-  "description": "Webflow-specific agent skills for Claude - CMS management, publishing, QA, and site operations",
+  "description": "Production-ready agent skills for Webflow - CMS management, site auditing, asset optimization, and safe publishing",
   "owner": {
     "name": "Webflow",
     "email": "developers@webflow.com"
@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "webflow-skills",
-      "description": "Skills for Webflow site management including bulk CMS updates, safe publishing, QA checks, and more",
+      "description": "Manage Webflow CMS content, audit site health, optimize assets, and safely publish changes with built-in validation workflows",
       "author": {
         "name": "Webflow"
       },
