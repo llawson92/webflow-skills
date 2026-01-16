@@ -10,15 +10,13 @@ Create or update multiple CMS items with comprehensive validation, granular appr
 ## Important Note
 
 **ALWAYS use Webflow MCP tools for all operations:**
-- Use Webflow MCP's `sites_list` for listing available sites
-- Use Webflow MCP's `collections_list` for listing CMS collections
-- Use Webflow MCP's `collections_get` for fetching collection schemas
-- Use Webflow MCP's `collections_items_list_items` for retrieving existing items
-- Use Webflow MCP's `collections_items_create_item_live` for creating items (published immediately)
-- Use Webflow MCP's `collections_items_create_item` for creating draft items
-- Use Webflow MCP's `collections_items_update_items_live` for updating items (published immediately)
-- Use Webflow MCP's `collections_items_update_items` for updating draft items
-- Use Webflow MCP's `collections_items_publish_items` for publishing draft items
+- Use Webflow MCP's `data_sites_tool` with action `list_sites` for listing available sites
+- Use Webflow MCP's `data_cms_tool` with action `get_collection_list` for listing CMS collections
+- Use Webflow MCP's `data_cms_tool` with action `get_collection_details` for fetching collection schemas
+- Use Webflow MCP's `data_cms_tool` with action `list_collection_items` for retrieving existing items
+- Use Webflow MCP's `data_cms_tool` with action `create_collection_items` for creating items (draft or published)
+- Use Webflow MCP's `data_cms_tool` with action `update_collection_items` for updating items (draft or published)
+- Use Webflow MCP's `data_cms_tool` with action `publish_collection_items` for publishing draft items
 - Use Webflow MCP's `webflow_guide_tool` to get best practices before starting
 - DO NOT use any other tools or methods for Webflow operations
 - All tool calls must include the required `context` parameter (15-25 words, third-person perspective)
@@ -27,9 +25,9 @@ Create or update multiple CMS items with comprehensive validation, granular appr
 
 ### Phase 1: Site & Collection Selection
 1. **Get site**: Identify the target site. If user does not provide site ID, ask for it.
-2. **List collections**: Use Webflow MCP's `collections_list` to show available collections
+2. **List collections**: Use Webflow MCP's `data_cms_tool` with action `get_collection_list` to show available collections
 3. **Ask user to select collection**: User specifies which collection to work with
-4. **Fetch collection schema**: Use Webflow MCP's `collections_get` to retrieve:
+4. **Fetch collection schema**: Use Webflow MCP's `data_cms_tool` with action `get_collection_details` to retrieve:
    - All field definitions with types
    - Required vs optional fields
    - Field validations (max length, patterns, etc.)
@@ -46,7 +44,7 @@ Create or update multiple CMS items with comprehensive validation, granular appr
    - CSV-style data
    - Bullet lists
 7. **Parse and normalize**: Convert user data into structured format
-8. **Fetch existing items** (if updates involved): Use Webflow MCP's `collections_items_list_items` to get current data
+8. **Fetch existing items** (if updates involved): Use Webflow MCP's `data_cms_tool` with action `list_collection_items` to get current data
 
    **IMPORTANT - Efficient Item Lookup:**
    - When searching for specific items by name, ALWAYS use the `name` parameter to filter (e.g., `name: "Pikachu"`)

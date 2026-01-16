@@ -12,7 +12,7 @@ Analyze assets on a Webflow site for SEO optimization.
 **ALWAYS use Webflow MCP tools for all operations:**
 - Use Webflow MCP's `asset_tool` for fetching and updating assets
 - Use Webflow MCP's `get_image_preview` for analyzing image content
-- Use Webflow MCP's `sites_list` for listing available sites
+- Use Webflow MCP's `data_sites_tool` with action `list_sites` for listing available sites
 - Use Webflow MCP's `webflow_guide_tool` to get best practices before starting
 - DO NOT use any other tools or methods for Webflow operations
 - All tool calls must include the required `context` parameter (15-25 words, third-person perspective)

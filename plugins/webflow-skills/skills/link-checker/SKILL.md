@@ -11,17 +11,16 @@ Audit and fix broken or insecure links across your Webflow site to improve SEO a
 
 **ALWAYS use Webflow MCP tools for all operations:**
 - Use Webflow MCP's `webflow_guide_tool` to get best practices before starting
-- Use Webflow MCP's `sites_list` to identify available sites
-- Use Webflow MCP's `sites_get` to retrieve site details
-- Use Webflow MCP's `pages_list` to get all pages
-- Use Webflow MCP's `pages_get_content` to extract links from static pages
-- Use Webflow MCP's `pages_update_static_content` to fix links on static pages (requires Designer)
-- Use Webflow MCP's `collections_list` to get all CMS collections
-- Use Webflow MCP's `collections_get` to get collection schemas
-- Use Webflow MCP's `collections_items_list_items` to get CMS items with links
-- Use Webflow MCP's `collections_items_update_items` to fix links in CMS (draft)
-- Use Webflow MCP's `collections_items_update_items_live` to fix links in CMS (live)
-- Use Webflow MCP's `collections_items_publish_items` to publish fixed CMS items
+- Use Webflow MCP's `data_sites_tool` with action `list_sites` to identify available sites
+- Use Webflow MCP's `data_sites_tool` with action `get_site` to retrieve site details
+- Use Webflow MCP's `data_pages_tool` with action `list_pages` to get all pages
+- Use Webflow MCP's `data_pages_tool` with action `get_page_content` to extract links from static pages
+- Use Webflow MCP's `data_pages_tool` with action `update_static_content` to fix links on static pages (requires Designer)
+- Use Webflow MCP's `data_cms_tool` with action `get_collection_list` to get all CMS collections
+- Use Webflow MCP's `data_cms_tool` with action `get_collection_details` to get collection schemas
+- Use Webflow MCP's `data_cms_tool` with action `list_collection_items` to get CMS items with links
+- Use Webflow MCP's `data_cms_tool` with action `update_collection_items` to fix links in CMS (draft)
+- Use Webflow MCP's `data_cms_tool` with action `publish_collection_items` to publish fixed CMS items
 - DO NOT use any other tools or methods for Webflow operations
 - All tool calls must include the required `context` parameter (15-25 words, third-person perspective)
 - **Designer connection required** for static page link fixes
@@ -29,19 +28,19 @@ Audit and fix broken or insecure links across your Webflow site to improve SEO a
 ## Instructions
 
 ### Phase 1: Site Selection & Discovery
-1. **Get site information**: Use Webflow MCP's `sites_list` to identify target site
+1. **Get site information**: Use Webflow MCP's `data_sites_tool` with action `list_sites` to identify target site
 2. **Confirm scope**: Ask user if they want to check:
    - Static pages only
    - CMS content only
    - Both static pages and CMS content
-3. **List pages**: Use Webflow MCP's `pages_list` to get all pages
-4. **List collections**: Use Webflow MCP's `collections_list` to get all CMS collections
+3. **List pages**: Use Webflow MCP's `data_pages_tool` with action `list_pages` to get all pages
+4. **List collections**: Use Webflow MCP's `data_cms_tool` with action `get_collection_list` to get all CMS collections
 
 ### Phase 2: Link Extraction & Validation
-5. **Extract links from static pages**: Use Webflow MCP's `pages_get_content` for each page
+5. **Extract links from static pages**: Use Webflow MCP's `data_pages_tool` with action `get_page_content` for each page
    - Identify all link elements (Link, Button, TextLink, LinkBlock)
    - Capture: pageId, nodeName, URL, link text
-6. **Extract links from CMS**: Use Webflow MCP's `collections_items_list_items` for each collection
+6. **Extract links from CMS**: Use Webflow MCP's `data_cms_tool` with action `list_collection_items` for each collection
    - Identify Link fields and Rich Text fields with links
    - Capture: collectionId, itemId, fieldName, URL
 7. **Validate each link**: Test URL accessibility
@@ -105,11 +104,11 @@ Audit and fix broken or insecure links across your Webflow site to improve SEO a
     - Requires Designer connection
     - Update link URLs in nodes
     - Process in batches of 20 links
-16. **Apply fixes to CMS content**: Use Webflow MCP's `collections_items_update_items`
+16. **Apply fixes to CMS content**: Use Webflow MCP's `data_cms_tool` with action `update_collection_items`
     - Update Link fields directly
     - Update links in Rich Text fields
     - Process in batches of 50 items
-17. **Publish changes** (if requested): Use Webflow MCP's `collections_items_publish_items`
+17. **Publish changes** (if requested): Use Webflow MCP's `data_cms_tool` with action `publish_collection_items`
 18. **Show progress**: Display progress indicators for large operations
 19. **Generate final report**:
     - Links scanned: X

@@ -11,7 +11,7 @@ Apply FlowKit CSS naming conventions in Webflow projects using Webflow Designer 
 
 **ALWAYS use Webflow MCP tools for all operations:**
 - Use Webflow MCP's `webflow_guide_tool` to get best practices before starting
-- Use Webflow MCP's `sites_list` to identify the target site
+- Use Webflow MCP's `data_sites_tool` with action `list_sites` to identify the target site
 - Use Webflow MCP's `de_page_tool` to get current page and switch pages
 - Use Webflow MCP's `element_tool` to select elements and inspect current classes
 - Use Webflow MCP's `style_tool` to create and update FlowKit-compliant styles

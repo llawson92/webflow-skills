@@ -24,7 +24,7 @@ These skills require the Webflow MCP (Model Context Protocol) server to be insta
 
 3. **Verify Installation**
 
-   Test the connection by calling `sites_list` to confirm access to Webflow sites.
+   Test the connection by calling `data_sites_tool` with action `list_sites` to confirm access to Webflow sites.
 
 ### What Webflow MCP Provides
 
@@ -150,40 +150,50 @@ When working with Webflow skills, these MCP tools are available:
 ### Core Site Operations
 
 - `webflow_guide_tool` - **Always call first** to get best practices
-- `sites_list` - List all accessible sites
-- `sites_get` - Get detailed site information
-- `sites_publish` - Publish site to specified domains
+- `data_sites_tool` - Consolidated tool for site operations with actions:
+  - `list_sites` - List all accessible sites
+  - `get_site` - Get detailed site information
+  - `publish_site` - Publish site to specified domains
 
 ### CMS Operations
 
-- `collections_list` - List all CMS collections
-- `collections_get` - Get collection schema and fields
-- `collections_create` - Create new collections
-- `collections_items_list_items` - List items in collection
-- `collections_items_create_item` - Create items (draft)
-- `collections_items_create_item_live` - Create items (publish immediately)
-- `collections_items_update_items` - Update items (draft)
-- `collections_items_update_items_live` - Update items (publish immediately)
-- `collections_items_publish_items` - Publish draft items
-- `collections_items_delete_item` - Delete collection item
-
-### Field Management
-
-- `collection_fields_create_static` - Create static fields (text, number, date, etc.)
-- `collection_fields_create_option` - Create option fields (dropdowns)
-- `collection_fields_create_reference` - Create reference/multi-reference fields
-- `collection_fields_update` - Update field properties
+- `data_cms_tool` - Consolidated tool for CMS operations with actions:
+  - **Collections**: `get_collection_list`, `get_collection_details`, `create_collection`
+  - **Fields**: `create_collection_static_field`, `create_collection_option_field`, `create_collection_reference_field`, `update_collection_field`
+  - **Items**: `list_collection_items`, `create_collection_items`, `update_collection_items`, `publish_collection_items`, `delete_collection_items`
 
 ### Page Operations
 
-- `pages_list` - List all pages in site
-- `pages_get_metadata` - Get page SEO settings
-- `pages_update_page_settings` - Update page metadata, SEO, slug
-- `pages_get_content` - Get page content structure
-- `pages_update_static_content` - Update page content (requires Designer)
+- `data_pages_tool` - Consolidated tool for page operations with actions:
+  - `list_pages` - List all pages in site
+  - `get_page_metadata` - Get page SEO settings
+  - `update_page_settings` - Update page metadata, SEO, slug
+  - `get_page_content` - Get page content structure
+  - `update_static_content` - Update page content (requires Designer)
+
+### Component Operations
+
+- `data_components_tool` - Consolidated tool for component operations with actions:
+  - `list_components` - List all components
+  - `get_component_content` - Get component structure
+  - `update_component_content` - Update component content
+  - `get_component_properties` - Get component properties
+  - `update_component_properties` - Update component properties
+
+### Scripts & Custom Code
+
+- `data_scripts_tool` - Consolidated tool for script operations with actions:
+  - `list_registered_scripts` - List registered scripts
+  - `list_applied_scripts` - Get applied scripts
+  - `add_inline_site_script` - Add inline scripts (max 10,000 chars)
+  - `delete_all_site_scripts` - Remove all custom scripts
+  - `get_page_script` - Get scripts on specific page
+  - `upsert_page_script` - Add/update page scripts
+  - `delete_all_page_scripts` - Remove all page scripts
 
 ### Designer Tools (requires Designer connection)
 
+These tools remain action-based and unchanged:
 - `element_tool` - Get/select elements, update attributes, styles, links
 - `element_builder` - Create elements (max 3 levels deep)
 - `de_component_tool` - Manage components and instances
@@ -193,15 +203,9 @@ When working with Webflow skills, these MCP tools are available:
 - `asset_tool` - Manage assets and folders
 - `de_learn_more_about_styles` - Reference for supported styles
 
-### Scripts & Custom Code
-
-- `site_registered_scripts_list` - List registered scripts
-- `site_applied_scripts_list` - Get applied scripts
-- `add_inline_site_script` - Add inline scripts (max 2000 chars)
-- `delete_all_site_scripts` - Remove all custom scripts
-
 ### Helper Tools
 
+These tools remain standalone:
 - `ask_webflow_ai` - Ask questions about Webflow API
 - `get_image_preview` - Preview images from URLs
 
@@ -244,7 +248,7 @@ User: "Use the safe-publish skill to publish my site"
 
 ### 1. Site ID Requirements
 
-- **Never assume site IDs** - Always use `sites_list` to fetch available sites
+- **Never assume site IDs** - Always use `data_sites_tool` with action `list_sites` to fetch available sites
 - **Ask user to select** - If multiple sites, let user choose by name or number
 - **Confirm site name** - Verify you're working on the correct site
 
@@ -594,7 +598,7 @@ After any operation, report:
 User: "Audit my Webflow site"
 
 1. Call webflow_guide_tool
-2. Call sites_list
+2. Call data_sites_tool with action list_sites
 3. Ask user to select site
 4. Invoke site-audit skill
 5. Skill handles full workflow
@@ -607,8 +611,8 @@ User: "Audit my Webflow site"
 User: "Add these 5 blog posts: [data]"
 
 1. Call webflow_guide_tool
-2. Call sites_list → get site
-3. Call collections_list → find "Blog Posts" collection
+2. Call data_sites_tool with action list_sites → get site
+3. Call data_cms_tool with action get_collection_list → find "Blog Posts" collection
 4. Invoke bulk-cms-update skill with:
    - Site ID
    - Collection name
@@ -623,7 +627,7 @@ User: "Add these 5 blog posts: [data]"
 User: "Check for broken links"
 
 1. Call webflow_guide_tool
-2. Call sites_list → get site
+2. Call data_sites_tool with action list_sites → get site
 3. Invoke link-checker skill
 4. Skill extracts + validates all links
 5. Shows health report
@@ -659,7 +663,7 @@ User: "How should I structure my CMS for a recipe site?"
 ```
 Problem: Site ID incorrect or site not accessible
 Solution:
-1. Use sites_list to see available sites
+1. Use data_sites_tool with action list_sites to see available sites
 2. Verify user has access to site
 3. Confirm site name with user
 ```
@@ -702,7 +706,7 @@ Solution:
 
 **Always call first**: `webflow_guide_tool`
 
-**Get site**: `sites_list` → user selects → use `siteId`
+**Get site**: `data_sites_tool` with action `list_sites` → user selects → use `siteId`
 
 **Context parameter**: 15-25 words, third-person, explain action
 
