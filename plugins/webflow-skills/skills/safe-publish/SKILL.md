@@ -10,12 +10,12 @@ Publish a Webflow site with comprehensive preview, validation, and explicit conf
 ## Important Note
 
 **ALWAYS use Webflow MCP tools for all operations:**
-- Use Webflow MCP's `sites_list` for listing available sites
-- Use Webflow MCP's `sites_get` for detailed site information
-- Use Webflow MCP's `pages_list` for retrieving all pages
-- Use Webflow MCP's `collections_list` for listing CMS collections
-- Use Webflow MCP's `collections_items_list_items` for checking draft items
-- Use Webflow MCP's `sites_publish` for publishing the site
+- Use Webflow MCP's `data_sites_tool` with action `list_sites` for listing available sites
+- Use Webflow MCP's `data_sites_tool` with action `get_site` for detailed site information
+- Use Webflow MCP's `data_pages_tool` with action `list_pages` for retrieving all pages
+- Use Webflow MCP's `data_cms_tool` with action `get_collection_list` for listing CMS collections
+- Use Webflow MCP's `data_cms_tool` with action `list_collection_items` for checking draft items
+- Use Webflow MCP's `data_sites_tool` with action `publish_site` for publishing the site
 - Use Webflow MCP's `webflow_guide_tool` to get best practices before starting
 - DO NOT use any other tools or methods for Webflow operations
 - All tool calls must include the required `context` parameter (15-25 words, third-person perspective)
@@ -24,7 +24,7 @@ Publish a Webflow site with comprehensive preview, validation, and explicit conf
 
 ### Phase 1: Site Selection & Status Check
 1. **Get site**: Identify the target site. If user does not provide site ID, ask for it.
-2. **Fetch site details**: Use Webflow MCP's `sites_get` to retrieve:
+2. **Fetch site details**: Use Webflow MCP's `data_sites_tool` with action `get_site` to retrieve:
    - Last published date
    - Last updated date
    - Custom domains configured
@@ -35,12 +35,12 @@ Publish a Webflow site with comprehensive preview, validation, and explicit conf
    - If `lastUpdated` > `lastPublished`, site has unpublished changes
 
 ### Phase 2: Change Detection & Analysis
-4. **List all pages**: Use Webflow MCP's `pages_list`
+4. **List all pages**: Use Webflow MCP's `data_pages_tool` with action `list_pages`
 5. **Identify modified pages**:
    - Compare each page's `lastUpdated` with site's `lastPublished`
    - Flag pages modified after last publish
    - Categorize by type (static, CMS template, archived, draft)
-6. **List all collections**: Use Webflow MCP's `collections_list`
+6. **List all collections**: Use Webflow MCP's `data_cms_tool` with action `get_collection_list`
 7. **Check for draft items**:
    - For each collection, use Webflow MCP's `collections_items_list_items`
    - Count items where `isDraft: true`
@@ -71,7 +71,7 @@ Publish a Webflow site with comprehensive preview, validation, and explicit conf
     - "yes" or "y" should NOT trigger publish
     - Show clear warning about what will go live
 13. **Execute publish**:
-    - Use Webflow MCP's `sites_publish` with correct parameters
+    - Use Webflow MCP's `data_sites_tool` with action `publish_site` with correct parameters
     - Handle `customDomains` as empty array if no custom domains
     - Set `publishToWebflowSubdomain` based on user choice
 14. **Capture publish timestamp**:

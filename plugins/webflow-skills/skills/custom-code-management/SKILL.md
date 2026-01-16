@@ -13,21 +13,22 @@ Webflow custom code: **register** (store script) → **apply** (attach to site).
 
 **ALWAYS use Webflow MCP tools for all operations:**
 Use the following tools for all operations:
-- `site_registered_scripts_list` / `site_applied_scripts_list` - List scripts
-- `add_inline_site_script` - Register inline script (no `<script>` tags)
-- `delete_all_site_scripts` - Remove ALL scripts (no selective delete)
+- `data_scripts_tool` with actions `list_registered_scripts` / `list_applied_scripts` - List scripts
+- `data_scripts_tool` with action `add_inline_site_script` - Register inline script (no `<script>` tags)
+- `data_scripts_tool` with action `delete_all_site_scripts` - Remove ALL scripts (no selective delete)
+- `data_sites_tool` with action `list_sites` - List available sites
 
 ## Instructions
 
 ### View Scripts
-1. Call `sites_list` if needed, then call both list tools in parallel
+1. Call `data_sites_tool` with action `list_sites` if needed, then call both list tools in parallel
 2. Display registration and application status
 
 ### Add Script
 1. Gather: name, code, location (header/footer)
 2. Validate: under 10,000 chars, no `<script>` tags
 3. Preview with character count, require **"add"** to confirm
-4. Call `add_inline_site_script` with displayName, sourceCode, version, location, canCopy
+4. Call `data_scripts_tool` with action `add_inline_site_script` with displayName, sourceCode, version, location, canCopy
 5. Remind user to publish
 
 ### Remove Scripts

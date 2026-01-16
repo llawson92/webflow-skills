@@ -11,24 +11,24 @@ Create a new CMS collection with custom fields, relationships, and proper config
 
 **ALWAYS use Webflow MCP tools for all operations:**
 - Use Webflow MCP's `webflow_guide_tool` to get best practices before starting
-- Use Webflow MCP's `sites_list` to identify available sites
-- Use Webflow MCP's `sites_get` to retrieve site details and plan limits
-- Use Webflow MCP's `collections_list` to check for naming conflicts
-- Use Webflow MCP's `collections_create` to create the collection
-- Use Webflow MCP's `collection_fields_create_static` to create static fields
-- Use Webflow MCP's `collection_fields_create_option` to create option fields
-- Use Webflow MCP's `collection_fields_create_reference` to create reference/multi-reference fields
-- Use Webflow MCP's `collections_get` to verify collection was created correctly
+- Use Webflow MCP's `data_sites_tool` with action `list_sites` to identify available sites
+- Use Webflow MCP's `data_sites_tool` with action `get_site` to retrieve site details and plan limits
+- Use Webflow MCP's `data_cms_tool` with action `get_collection_list` to check for naming conflicts
+- Use Webflow MCP's `data_cms_tool` with action `create_collection` to create the collection
+- Use Webflow MCP's `data_cms_tool` with action `create_collection_static_field` to create static fields
+- Use Webflow MCP's `data_cms_tool` with action `create_collection_option_field` to create option fields
+- Use Webflow MCP's `data_cms_tool` with action `create_collection_reference_field` to create reference/multi-reference fields
+- Use Webflow MCP's `data_cms_tool` with action `get_collection_details` to verify collection was created correctly
 - DO NOT use any other tools or methods for Webflow operations
 - All tool calls must include the required `context` parameter (15-25 words, third-person perspective)
 
 ## Instructions
 
 ### Phase 1: Site Selection & Discovery
-1. **Get site information**: Use Webflow MCP's `sites_list` to identify target site
+1. **Get site information**: Use Webflow MCP's `data_sites_tool` with action `list_sites` to identify target site
 2. **Confirm site**: Ask user to select site if multiple available
-3. **Check plan limits**: Use Webflow MCP's `sites_get` to verify collection limits
-4. **List existing collections**: Use Webflow MCP's `collections_list` to check for conflicts
+3. **Check plan limits**: Use Webflow MCP's `data_sites_tool` with action `get_site` to verify collection limits
+4. **List existing collections**: Use Webflow MCP's `data_cms_tool` with action `get_collection_list` to check for conflicts
 5. **Validate naming**: Ensure new collection name doesn't conflict with existing
 
 ### Phase 2: Requirements Gathering
@@ -71,7 +71,7 @@ Create a new CMS collection with custom fields, relationships, and proper config
 15. **Request confirmation**: Wait for explicit "create" approval
 
 ### Phase 5: Collection Creation
-16. **Create collection**: Use Webflow MCP's `collections_create` with:
+16. **Create collection**: Use Webflow MCP's `data_cms_tool` with action `create_collection` with:
     - Display name
     - Singular name
     - Optional slug
@@ -81,9 +81,9 @@ Create a new CMS collection with custom fields, relationships, and proper config
 ### Phase 6: Field Creation
 19. **Create fields in order**: For each field:
     - Use appropriate creation tool based on type
-    - Static fields: `collection_fields_create_static`
-    - Option fields: `collection_fields_create_option`
-    - Reference fields: `collection_fields_create_reference`
+    - Static fields: `data_cms_tool` with action `create_collection_static_field`
+    - Option fields: `data_cms_tool` with action `create_collection_option_field`
+    - Reference fields: `data_cms_tool` with action `create_collection_reference_field`
 20. **Set field properties**:
     - Display name
     - Required flag
@@ -93,7 +93,7 @@ Create a new CMS collection with custom fields, relationships, and proper config
 22. **Handle errors**: If field creation fails, report and continue
 
 ### Phase 7: Verification & Reporting
-23. **Verify collection**: Use Webflow MCP's `collections_get` to retrieve full schema
+23. **Verify collection**: Use Webflow MCP's `data_cms_tool` with action `get_collection_details` to retrieve full schema
 24. **Confirm all fields**: Check that all requested fields were created
 25. **Generate report**: Show:
     - Collection ID
@@ -180,7 +180,7 @@ Create a new CMS collection with custom fields, relationships, and proper config
 - Use for: Status, category, type, priority
 - Properties: List of option names
 - Example: "Status" (Draft, Review, Published)
-- Creation: Use `collection_fields_create_option` with options array
+- Creation: Use `data_cms_tool` with action `create_collection_option_field` with options array
 
 **Example:**
 ```json
@@ -203,14 +203,14 @@ Create a new CMS collection with custom fields, relationships, and proper config
 - Use for: Author → Post, Category → Post, Brand → Product
 - Properties: Collection ID of referenced collection
 - Example: "Author" (reference to Authors collection)
-- Creation: Use `collection_fields_create_reference` with collectionId
+- Creation: Use `data_cms_tool` with action `create_collection_reference_field` with collectionId
 
 **MultiReference** - Link to multiple items in another collection (many-to-many)
 - Use for: Post → Tags, Product → Features, Project → Technologies
 - Properties: Collection ID of referenced collection
 - Limit: Max 5 multi-reference fields per collection
 - Example: "Tags" (reference to Tags collection)
-- Creation: Use `collection_fields_create_reference` with collectionId
+- Creation: Use `data_cms_tool` with action `create_collection_reference_field` with collectionId
 
 **Reference Field Example:**
 ```json
@@ -1008,7 +1008,7 @@ Notes:
 **Post-Creation Verification:**
 ```
 After creating collection and fields:
-1. Call collections_get with collection ID
+1. Call data_cms_tool with action get_collection_details with collection ID
 2. Verify all fields present
 3. Check field properties match request
 4. Confirm relationships configured correctly

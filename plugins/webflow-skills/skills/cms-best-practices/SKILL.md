@@ -11,12 +11,12 @@ Provide expert guidance on Webflow CMS architecture, relationships, optimization
 
 **ALWAYS use Webflow MCP tools for all operations:**
 - Use Webflow MCP's `webflow_guide_tool` to get best practices before starting
-- Use Webflow MCP's `sites_list` to identify available sites
-- Use Webflow MCP's `sites_get` to retrieve site details and plan limits
-- Use Webflow MCP's `collections_list` to analyze existing collections
-- Use Webflow MCP's `collections_get` to examine collection schemas
-- Use Webflow MCP's `collections_items_list_items` to assess content volume
-- Use Webflow MCP's `pages_list` to understand page structure
+- Use Webflow MCP's `data_sites_tool` with action `list_sites` to identify available sites
+- Use Webflow MCP's `data_sites_tool` with action `get_site` to retrieve site details and plan limits
+- Use Webflow MCP's `data_cms_tool` with action `get_collection_list` to analyze existing collections
+- Use Webflow MCP's `data_cms_tool` with action `get_collection_details` to examine collection schemas
+- Use Webflow MCP's `data_cms_tool` with action `list_collection_items` to assess content volume
+- Use Webflow MCP's `data_pages_tool` with action `list_pages` to understand page structure
 - Use Webflow MCP's `ask_webflow_ai` for specific API questions
 - DO NOT use any other tools or methods for Webflow operations
 - All tool calls must include the required `context` parameter (15-25 words, third-person perspective)
@@ -30,10 +30,10 @@ Provide expert guidance on Webflow CMS architecture, relationships, optimization
    - Troubleshooting performance issues
    - Setting up relationships
    - Seeking architecture guidance
-2. **Get site information**: Use Webflow MCP's `sites_list` and `sites_get` to understand plan limits
-3. **Analyze existing structure**: Use Webflow MCP's `collections_list` and `collections_get` to examine current setup
-4. **Assess content volume**: Use Webflow MCP's `collections_items_list_items` to understand scale
-5. **Review pages**: Use Webflow MCP's `pages_list` to see how content is displayed
+2. **Get site information**: Use Webflow MCP's `data_sites_tool` with actions `list_sites` and `get_site` to understand plan limits
+3. **Analyze existing structure**: Use Webflow MCP's `data_cms_tool` with actions `get_collection_list` and `get_collection_details` to examine current setup
+4. **Assess content volume**: Use Webflow MCP's `data_cms_tool` with action `list_collection_items` to understand scale
+5. **Review pages**: Use Webflow MCP's `data_pages_tool` with action `list_pages` to see how content is displayed
 
 ### Phase 2: Requirements Gathering
 6. **Understand use case**: Ask clarifying questions:
