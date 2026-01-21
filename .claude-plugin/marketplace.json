@@ -15,6 +15,15 @@
       },
       "source": "./plugins/webflow-skills",
       "category": "productivity"
+    },
+    {
+      "name": "webflow-cli-skills",
+      "description": "Automate Webflow CLI workflows including Code Components, DevLink sync, Webflow Cloud deployments, and Designer Extensions",
+      "author": {
+        "name": "Webflow"
+      },
+      "source": "./plugins/webflow-cli-skills",
+      "category": "developer-tools"
     }
   ]
 }

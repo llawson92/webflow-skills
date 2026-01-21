@@ -726,3 +726,122 @@ Solution:
 **Report results**: Successes, failures, next steps
 
 **Handle errors**: Explain, suggest recovery, report partial success
+
+---
+
+## Webflow CLI Skills
+
+You have access to Webflow CLI skills for development workflows. These skills use the Bash tool to execute `webflow` CLI commands.
+
+### Prerequisites
+
+**⚠️ IMPORTANT: Webflow CLI Required**
+
+These skills require the Webflow CLI to be installed and authenticated:
+
+```bash
+# Install CLI (use npm, pnpm, or yarn)
+npm install -g @webflow/cli
+
+# Authenticate
+webflow auth login
+
+# Verify
+webflow --version
+```
+
+### Package Manager Detection
+
+**ALWAYS detect package manager before running install commands:**
+
+1. **Check for lock files** in project directory:
+   - `package-lock.json` → use npm
+   - `pnpm-lock.yaml` → use pnpm
+   - `yarn.lock` → use yarn
+
+2. **If no lock file found**, ask user:
+   ```
+   Which package manager would you like to use?
+   - npm (default)
+   - pnpm
+   - yarn
+   ```
+
+3. **Use detected/selected package manager** for all commands:
+   - npm: `npm install`, `npm run build`
+   - pnpm: `pnpm install`, `pnpm run build`
+   - yarn: `yarn install`, `yarn build`
+
+### Available CLI Skills
+
+#### Development Workflows
+
+- **code-component**: Create and deploy Code Components for Webflow Designer
+  - Commands: `webflow library bundle`, `webflow library share`, `webflow library log`
+  - Workflow: configure webflow.json → build → bundle → share
+  - Schema: `library` section in webflow.json
+
+- **devlink**: Export Webflow designs to React/Next.js code
+  - Commands: `webflow devlink sync`
+  - Workflow: configure → sync → integrate
+  - Schema: `devlink` section in webflow.json
+
+- **webflow-cloud**: Deploy full-stack apps to Webflow Cloud
+  - Commands: `webflow cloud list`, `webflow cloud init`, `webflow cloud deploy`
+  - Workflow: init → build → deploy → verify
+  - Schema: `cloud` section in webflow.json
+
+- **designer-extension**: Build Designer Extensions
+  - Commands: `webflow extension list`, `webflow extension init`, `webflow extension bundle`, `webflow extension serve`
+  - Workflow: list → init → serve → bundle → upload
+  - Schema: Extension config in webflow.json
+
+#### CLI Diagnostics
+
+- **webflow-cli-troubleshooter**: Diagnose and fix CLI issues
+  - Flags: `--version`, `--help`, `--verbose`, `--debug-bundler`
+  - Workflow: identify → diagnose → fix → verify
+
+### When to Use CLI Skills
+
+**Use CLI skills when user asks to run commands for:**
+- Code Components (`webflow library` commands)
+- DevLink (`webflow devlink` commands)
+- Webflow Cloud (`webflow cloud` commands)
+- Designer Extensions (`webflow extension` commands)
+- CLI troubleshooting and diagnostics
+
+### Key Patterns
+
+**CLI Verification:**
+```bash
+# Check CLI installed
+webflow --version
+
+# Authenticate if needed
+webflow auth login
+```
+
+**Diagnostic Flags:**
+- `--verbose` - Detailed output for debugging
+- `--debug-bundler` - Show bundler configuration
+- `--help` - Command syntax and options
+
+**File Operations:**
+- Use Read tool to examine files (never modify)
+- Let CLI generate/modify files
+- Preview generated content before operations
+
+**Bash Tool Usage:**
+- Execute all `webflow` commands via Bash tool
+- Provide clear descriptions (not context parameters)
+- Display CLI output to user
+- Check exit codes
+
+### Resources
+
+- **CLI Reference**: [Complete CLI documentation](https://developers.webflow.com/cli/reference/webflow-cli)
+- **Code Components**: [Building Components](https://developers.webflow.com/cli/code-components)
+- **DevLink**: [DevLink Guide](https://developers.webflow.com/devlink)
+- **Webflow Cloud**: [Cloud Apps](https://developers.webflow.com/cli/cloud-apps)
+- **Extensions**: [Designer Extensions](https://developers.webflow.com/cli/extensions)

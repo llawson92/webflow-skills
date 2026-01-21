@@ -94,10 +94,70 @@ Copy the `skills/` directory to your agent's skills location, or reference the `
 - **safe-publish** - Preview → Confirm → Publish workflow with verification
 - **custom-code-management** - Manage tracking scripts and custom code safely
 
+---
+
+## Webflow CLI Skills
+
+In addition to the MCP-based skills above, this repository includes **webflow-cli-skills** for Webflow CLI workflows.
+
+### Prerequisites for Webflow CLI Skills
+
+**⚠️ IMPORTANT: Webflow CLI Required**
+
+CLI skills require the [Webflow CLI](https://developers.webflow.com/cli) to be installed and authenticated.
+
+## Installation
+
+### Claude Code (via Marketplace)
+
+```bash
+# Add the marketplace
+claude plugin marketplace add webflow/webflow-skills
+
+# Install the plugin
+claude plugin install webflow-skills@webflow-cli-skills
+```
+
+### Claude Code (from local clone)
+
+```bash
+# Install Webflow CLI skills plugin
+claude plugin install ~/webflow-skills/plugins/webflow-cli-skills
+```
+
+### Available Webflow CLI Skills
+
+#### Development Workflows
+- **code-component** - Create and deploy React components for Webflow Designer
+- **devlink** - Export Webflow components to React/Next.js code
+- **webflow-cloud** - Deploy full-stack apps to Webflow Cloud
+- **designer-extension** - Build Designer Extensions for Webflow Designer
+
+#### CLI Diagnostics
+- **webflow-cli-troubleshooter** - Diagnose and fix CLI issues
+
+### When to Use Webflow CLI Skills vs MCP Skills
+
+**Use MCP Skills (webflow-skills) for:**
+- CMS content management
+- Site auditing and optimization
+- Asset management
+- Publishing workflows
+
+**Use Webflow CLI Skills (webflow-cli-skills) when user asks to run commands for:**
+- Code Components (`webflow library` commands)
+- DevLink (`webflow devlink` commands)
+- Webflow Cloud (`webflow cloud` commands)
+- Designer Extensions (`webflow extension` commands)
+- CLI troubleshooting and diagnostics
+
+---
+
 ## Resources
 
 - **Prompt Library**: [Ready-to-use example prompts](https://developers.webflow.com/mcp/v1.0.0/examples) to get started quickly
 - **Available Tools**: [Complete tool reference](https://developers.webflow.com/mcp/v1.0.0/reference/how-it-works#available-tools) for all Webflow MCP capabilities
+- **Webflow CLI**: [Complete CLI reference](https://developers.webflow.com/cli/reference/webflow-cli) for all Webflow CLI commands
 
 ## License
 

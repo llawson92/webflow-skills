@@ -1,0 +1,6 @@
+{
+  "name": "webflow-cli-skills",
+  "description": "Production-ready skills for Webflow CLI workflows including Code Components, DevLink, Webflow Cloud, and Designer Extensions",
+  "version": "1.0.0",
+  "skills": "./skills/"
+}
