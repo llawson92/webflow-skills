@@ -128,6 +128,15 @@ Solution:
   - Output: Link health score, automatic fixes (HTTP→HTTPS), manual review items
   - Safety: Preview + granular approval for fixes
 
+- **accessibility-audit**: Comprehensive WCAG 2.1 accessibility audit for pages
+  - Use when: Preparing for launch, ensuring accessibility compliance, improving user experience
+  - Analyzes: Buttons, forms, links, focus states, headings, keyboard navigation, ARIA attributes
+  - Detects: Missing labels, non-semantic elements, focus issues, heading hierarchy problems, touch target sizes
+  - Output: Accessibility score (0-100), categorized issues (critical/serious/moderate), specific fixes
+  - Requires: Webflow Designer connection
+  - Safety: Preview + granular approval for fixes
+  - Note: Excludes image alt text (covered by asset-audit skill)
+
 ### Design & Naming Systems
 
 - **flowkit-naming**: Apply Webflow's official FlowKit CSS naming system
