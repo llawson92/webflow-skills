@@ -88,6 +88,7 @@ Copy the `skills/` directory to your agent's skills location, or reference the `
 - **site-audit** - Comprehensive health check with scoring (0-100) and prioritized recommendations
 - **asset-audit** - Identify optimization opportunities for images and files
 - **link-checker** - Scan and fix broken/insecure links across pages and CMS content
+- **accessibility-audit** - WCAG 2.1 compliance check for pages with detailed reports and fixes
 
 ### Publishing & Code
 - **safe-publish** - Preview → Confirm → Publish workflow with verification
