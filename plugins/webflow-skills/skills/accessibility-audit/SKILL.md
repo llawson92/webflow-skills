@@ -607,7 +607,7 @@ Found: 4 critical issues
 Would you like me to:
 1. Run full audit (includes serious and moderate issues)
 2. Fix these 4 critical issues now (requires Designer)
-3. Export this report
+3. Export this report (Markdown/JSON/CSV)
 ```
 
 ## Safety Rules
