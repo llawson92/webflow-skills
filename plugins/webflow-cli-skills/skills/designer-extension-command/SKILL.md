@@ -1,5 +1,5 @@
 ---
-name: designer-extension
+name: designer-extension-command
 description: Build Designer Extensions for custom Webflow Designer functionality. Lists available templates, initializes extension projects from templates (default/react/typescript-alt), bundles extensions for upload, and serves locally for development.
 ---
 

@@ -774,24 +774,26 @@ webflow --version
 
 ### Available CLI Skills
 
+**Note:** These skills are related to Webflow CLI command execution and are helpful to run commands in the right order with proper validation, error handling, and workflow management.
+
 #### Development Workflows
 
-- **code-component**: Create and deploy Code Components for Webflow Designer
+- **code-component-command**: Create and deploy Code Components for Webflow Designer
   - Commands: `webflow library bundle`, `webflow library share`, `webflow library log`
   - Workflow: configure webflow.json → build → bundle → share
   - Schema: `library` section in webflow.json
 
-- **devlink**: Export Webflow designs to React/Next.js code
+- **devlink-command**: Export Webflow designs to React/Next.js code
   - Commands: `webflow devlink sync`
   - Workflow: configure → sync → integrate
   - Schema: `devlink` section in webflow.json
 
-- **webflow-cloud**: Deploy full-stack apps to Webflow Cloud
+- **webflow-cloud-command**: Deploy full-stack apps to Webflow Cloud
   - Commands: `webflow cloud list`, `webflow cloud init`, `webflow cloud deploy`
   - Workflow: init → build → deploy → verify
   - Schema: `cloud` section in webflow.json
 
-- **designer-extension**: Build Designer Extensions
+- **designer-extension-command**: Build Designer Extensions
   - Commands: `webflow extension list`, `webflow extension init`, `webflow extension bundle`, `webflow extension serve`
   - Workflow: list → init → serve → bundle → upload
   - Schema: Extension config in webflow.json
@@ -805,11 +807,11 @@ webflow --version
 ### When to Use CLI Skills
 
 **Use CLI skills when user asks to run commands for:**
-- Code Components (`webflow library` commands)
-- DevLink (`webflow devlink` commands)
-- Webflow Cloud (`webflow cloud` commands)
-- Designer Extensions (`webflow extension` commands)
-- CLI troubleshooting and diagnostics
+- Code Components (`webflow library` commands) - use **code-component-command**
+- DevLink (`webflow devlink` commands) - use **devlink-command**
+- Webflow Cloud (`webflow cloud` commands) - use **webflow-cloud-command**
+- Designer Extensions (`webflow extension` commands) - use **designer-extension-command**
+- CLI troubleshooting and diagnostics - use **webflow-cli-troubleshooter**
 
 ### Key Patterns
 

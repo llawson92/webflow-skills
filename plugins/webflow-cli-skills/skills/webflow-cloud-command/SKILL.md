@@ -1,5 +1,5 @@
 ---
-name: webflow-cloud
+name: webflow-cloud-command
 description: Initialize, build, and deploy full-stack Webflow applications to Webflow Cloud hosting. List available templates, initialize projects with cloud init, and deploy with comprehensive validation. Use when creating or deploying Webflow Cloud applications.
 ---
 

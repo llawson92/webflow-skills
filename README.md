@@ -127,11 +127,13 @@ claude plugin install ~/webflow-skills/plugins/webflow-cli-skills
 
 ### Available Webflow CLI Skills
 
+**Note:** These skills are related to Webflow CLI command execution and are helpful to run commands in the right order with proper validation, error handling, and workflow management.
+
 #### Development Workflows
-- **code-component** - Create and deploy React components for Webflow Designer
-- **devlink** - Export Webflow components to React/Next.js code
-- **webflow-cloud** - Deploy full-stack apps to Webflow Cloud
-- **designer-extension** - Build Designer Extensions for Webflow Designer
+- **code-component-command** - Create and deploy React components for Webflow Designer
+- **devlink-command** - Export Webflow components to React/Next.js code
+- **webflow-cloud-command** - Deploy full-stack apps to Webflow Cloud
+- **designer-extension-command** - Build Designer Extensions for Webflow Designer
 
 #### CLI Diagnostics
 - **webflow-cli-troubleshooter** - Diagnose and fix CLI issues
@@ -145,11 +147,11 @@ claude plugin install ~/webflow-skills/plugins/webflow-cli-skills
 - Publishing workflows
 
 **Use Webflow CLI Skills (webflow-cli-skills) when user asks to run commands for:**
-- Code Components (`webflow library` commands)
-- DevLink (`webflow devlink` commands)
-- Webflow Cloud (`webflow cloud` commands)
-- Designer Extensions (`webflow extension` commands)
-- CLI troubleshooting and diagnostics
+- Code Components (`webflow library` commands) - use **code-component-command**
+- DevLink (`webflow devlink` commands) - use **devlink-command**
+- Webflow Cloud (`webflow cloud` commands) - use **webflow-cloud-command**
+- Designer Extensions (`webflow extension` commands) - use **designer-extension-command**
+- CLI troubleshooting and diagnostics - use **webflow-cli-troubleshooter**
 
 ---
 

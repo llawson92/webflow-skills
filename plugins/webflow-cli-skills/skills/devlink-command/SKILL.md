@@ -1,5 +1,5 @@
 ---
-name: devlink
+name: devlink-command
 description: Export Webflow Designer components to React/Next.js code for external projects. Configure devlink settings in webflow.json, sync design updates with devlink sync, validate generated code, show diffs, and provide integration examples. Use when building with Webflow designs in React/Next.js.
 ---
 
