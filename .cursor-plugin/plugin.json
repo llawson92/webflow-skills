@@ -1,0 +1,26 @@
+{
+  "name": "webflow",
+  "version": "1.0.0",
+  "description": "Production-ready agent skills for Webflow - CMS management, site auditing, asset optimization, and safe publishing",
+  "author": {
+    "name": "Webflow",
+    "email": "developers@webflow.com",
+    "url": "https://developers.webflow.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "webflow",
+    "mcp",
+    "cms",
+    "ai",
+    "site-audit",
+    "seo",
+    "accessibility",
+    "link-checker",
+    "asset-optimization",
+    "flowkit"
+  ],
+  "logo": "assets/logo.svg",
+  "skills": ["plugins/webflow-skills/skills"],
+  "agents": ["agents"]
+}
