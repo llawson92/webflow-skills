@@ -1,0 +1,13 @@
+{
+  "name": "webflow",
+  "owner": {
+    "name": "Webflow"
+  },
+  "plugins": [
+    {
+      "name": "webflow",
+      "source": "./",
+      "description": "Production-ready agent skills for Webflow - CMS management, site auditing, asset optimization, and safe publishing."
+    }
+  ]
+}
