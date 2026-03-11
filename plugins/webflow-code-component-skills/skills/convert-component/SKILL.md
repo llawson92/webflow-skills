@@ -77,10 +77,27 @@ Convert an existing React component into a Webflow Code Component by analyzing i
    ```
 
    **For both CSS-in-JS approaches**, update `webflow.json`:
+
+   styled-components:
    ```json
    {
      "library": {
-       "globals": "./src/globals.ts"
+       "globals": "./src/globals.ts",
+       "renderer": {
+         "server": "@webflow/styled-components-utils/server"
+       }
+     }
+   }
+   ```
+
+   Emotion:
+   ```json
+   {
+     "library": {
+       "globals": "./src/globals.ts",
+       "renderer": {
+         "server": "@webflow/emotion-utils/server"
+       }
      }
    }
    ```

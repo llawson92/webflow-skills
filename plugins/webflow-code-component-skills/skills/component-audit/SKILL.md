@@ -55,8 +55,8 @@ For each component, analyze these Webflow-specific areas:
 
 | Look For | Recommendation |
 |----------|----------------|
-| Hardcoded text strings | Expose as `props.Text()` or `props.RichText()` |
-| Text that designers should edit on canvas | Expose as `props.TextNode()` |
+| Hardcoded text strings | Expose as `props.Text()` |
+| Text that designers should edit on canvas | Expose as `props.RichText()` |
 | Hardcoded values from a fixed set of options | Expose as `props.Variant({ options: [...] })` |
 | Hardcoded image URLs | Expose as `props.Image()` |
 | Hardcoded link URLs | Expose as `props.Link()` |
@@ -114,6 +114,10 @@ For each component, analyze these Webflow-specific areas:
 | Missing style imports | Styles defined but not imported in .webflow.tsx | Add import statement |
 | Relying on inherited styles | Expecting parent styles to cascade | Use explicit styles or CSS variables |
 | Needs tag selectors (h1, p, etc.) | Tags not styled inside Shadow DOM | Enable `applyTagSelectors: true` in component options |
+
+> **SSR Note:** When using styled-components or Emotion, you must also configure the server renderer in `webflow.json` for SSR to work correctly:
+> - styled-components: `"library": { "renderer": { "server": "@webflow/styled-components-utils/server" } }`
+> - Emotion: `"library": { "renderer": { "server": "@webflow/emotion-utils/server" } }`
 
 #### E. SSR Safety
 
