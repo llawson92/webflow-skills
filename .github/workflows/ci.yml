@@ -22,8 +22,8 @@ jobs:
           # Check root files
           test -f README.md || (echo "Missing README.md" && exit 1)
           test -f LICENSE || (echo "Missing LICENSE" && exit 1)
-          test -f AGENTS.md || (echo "Missing AGENTS.md" && exit 1)
-          test -L CLAUDE.md || (echo "Missing CLAUDE.md symlink" && exit 1)
+          test -f CLAUDE.md || (echo "Missing CLAUDE.md" && exit 1)
+          test -L AGENTS.md || (echo "Missing AGENTS.md symlink" && exit 1)
           
           # Check marketplace config
           test -f .claude-plugin/marketplace.json || (echo "Missing .claude-plugin/marketplace.json" && exit 1)
