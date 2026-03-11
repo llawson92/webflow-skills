@@ -24,6 +24,15 @@
       },
       "source": "./plugins/webflow-code-component-skills",
       "category": "productivity"
+    },
+    {
+      "name": "webflow-cli-skills",
+      "description": "Run Webflow CLI commands for Code Components, DevLink, Cloud deployments, and Designer Extensions with validation workflows",
+      "author": {
+        "name": "Webflow"
+      },
+      "source": "./plugins/webflow-cli-skills",
+      "category": "productivity"
     }
   ]
 }
