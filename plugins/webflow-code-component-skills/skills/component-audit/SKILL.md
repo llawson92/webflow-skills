@@ -1,5 +1,5 @@
 ---
-name: component-audit
+name: webflow-code-component:component-audit
 description: Audit Webflow Code Components for architecture decisions - prop exposure, state management, slot opportunities, and Shadow DOM compatibility. Focused on Webflow-specific patterns, not generic React best practices.
 compatibility: Node.js 18+, React 18+, TypeScript, @webflow/webflow-cli
 metadata:

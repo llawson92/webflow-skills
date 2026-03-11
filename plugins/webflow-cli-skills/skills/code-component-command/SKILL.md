@@ -1,5 +1,5 @@
 ---
-name: code-component-command
+name: webflow-cli:code-component
 description: Create and deploy reusable React components for Webflow Designer. Configure existing React projects with webflow.json, build and bundle code, validate output, and deploy to workspace using library share. Use when building custom components for designers.
 ---
 

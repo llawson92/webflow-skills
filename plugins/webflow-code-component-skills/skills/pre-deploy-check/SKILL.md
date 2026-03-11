@@ -1,5 +1,5 @@
 ---
-name: pre-deploy-check
+name: webflow-code-component:pre-deploy-check
 description: Pre-deployment validation for Webflow Code Components. Checks bundle size, dependencies, prop configurations, SSR compatibility, styling setup, and common issues before running webflow library share.
 compatibility: Node.js 18+, React 18+, TypeScript, @webflow/webflow-cli
 metadata:

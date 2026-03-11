@@ -280,8 +280,8 @@ npx webflow library share
 ---
 
 💡 **Tips:**
-- Use `component-scaffold` skill to quickly create new components
-- Run `pre-deploy-check` skill before deploying
+- Use `webflow-code-component:component-scaffold` skill to quickly create new components
+- Run `webflow-code-component:pre-deploy-check` skill before deploying
 - Keep bundle under 50MB
 ```
 

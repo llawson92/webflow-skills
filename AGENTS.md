@@ -1,1 +1,1 @@
-agents/webflow-agent.md
+CLAUDE.md

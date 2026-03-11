@@ -61,7 +61,7 @@ These skills require the [Webflow MCP server](https://developers.webflow.com/mcp
 
 For detailed setup instructions, visit the [Webflow MCP Documentation](https://developers.webflow.com/mcp).
 
-## Skills
+## Webflow MCP Skills
 
 | Skill | Description |
 |-------|-------------|
@@ -75,6 +75,28 @@ For detailed setup instructions, visit the [Webflow MCP Documentation](https://d
 | safe-publish | Preview, confirm, publish workflow with verification |
 | custom-code-management | Manage tracking scripts and custom code safely |
 | flowkit-naming | Apply Webflow's official FlowKit CSS naming conventions |
+
+## Webflow CLI Skills
+
+| Skill | Description |
+|-------|-------------|
+| webflow-cli:cloud | Initialize, build, and deploy full-stack Webflow applications to Webflow Cloud hosting |
+| webflow-cli:devlink | Export Webflow Designer components to React/Next.js code for external projects |
+| webflow-cli:designer-extension | Build Designer Extensions for custom Webflow Designer functionality |
+| webflow-cli:code-component | Create and deploy reusable React components for Webflow Designer |
+| webflow-cli:troubleshooter | Diagnose and fix Webflow CLI issues including installation, auth, build, and bundle problems |
+
+## Webflow Code Component Skills
+
+| Skill | Description |
+|-------|-------------|
+| webflow-code-component:component-scaffold | Generate new Code Component boilerplate with React component and definition file |
+| webflow-code-component:convert-component | Convert an existing React component into a Webflow Code Component |
+| webflow-code-component:component-audit | Audit Code Components for architecture decisions and Shadow DOM compatibility |
+| webflow-code-component:deploy-guide | Step-by-step guide for deploying Code Components to a workspace |
+| webflow-code-component:local-dev-setup | Initialize a new Code Components project from scratch |
+| webflow-code-component:pre-deploy-check | Pre-deployment validation for bundle size, dependencies, SSR compatibility |
+| webflow-code-component:troubleshoot-deploy | Debug deployment failures with root cause analysis and fixes |
 
 ## Resources
 

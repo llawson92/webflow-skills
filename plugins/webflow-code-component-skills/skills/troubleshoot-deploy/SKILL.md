@@ -1,5 +1,5 @@
 ---
-name: troubleshoot-deploy
+name: webflow-code-component:troubleshoot-deploy
 description: Debug deployment failures for Webflow Code Components. Analyzes error messages, identifies root causes, and provides specific fixes for common issues.
 compatibility: Node.js 18+, React 18+, TypeScript, @webflow/webflow-cli
 metadata:

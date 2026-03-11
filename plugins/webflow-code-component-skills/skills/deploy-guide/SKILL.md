@@ -1,5 +1,5 @@
 ---
-name: deploy-guide
+name: webflow-code-component:deploy-guide
 description: Step-by-step guide for deploying Webflow Code Components to a workspace. Covers authentication, pre-flight checks, deployment execution, and verification.
 compatibility: Node.js 18+, React 18+, TypeScript, @webflow/webflow-cli
 metadata:
