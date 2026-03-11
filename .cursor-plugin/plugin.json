@@ -21,6 +21,9 @@
     "flowkit"
   ],
   "logo": "assets/logo.svg",
-  "skills": ["plugins/webflow-skills/skills"],
+  "skills": [
+    "plugins/webflow-skills/skills",
+    "plugins/webflow-code-component-skills/skills"
+  ],
   "agents": ["agents"]
 }

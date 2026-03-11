@@ -8,10 +8,13 @@ These skills work with any agent that supports the Agent Skills standard, includ
 
 ### Claude Code
 
-Install using the [plugin marketplace](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/plugins#add-from-marketplace):
+Install using the [plugin marketplace](https://code.claude.com/docs/en/discover-plugins#how-marketplaces-work):
 
 ```
-/plugin marketplace add webflow/webflow-skills
+# Add the marketplace
+claude plugin marketplace add webflow/webflow-skills
+# Install the plugin
+claude plugin install webflow-skills@webflow-skills
 ```
 
 ### Cursor
@@ -32,8 +35,8 @@ Clone this repo and copy the skill folders into the appropriate directory for yo
 
 | Agent | Skill Directory | Docs |
 |-------|-----------------|------|
-| Claude Code | `~/.claude/skills/` | [docs](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills) |
-| Cursor | `~/.cursor/skills/` | [docs](https://docs.cursor.com/context/rules) |
+| Claude Code | `~/.claude/skills/` | [docs](https://code.claude.com/docs/en/skills) |
+| Cursor | `~/.cursor/skills/` | [docs](https://cursor.com/docs/skills) |
 | OpenCode | `~/.config/opencode/skills/` | [docs](https://opencode.ai/docs/skills/) |
 | OpenAI Codex | `~/.codex/skills/` | [docs](https://developers.openai.com/codex/skills/) |
 | Pi | `~/.pi/agent/skills/` | [docs](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent#skills) |
