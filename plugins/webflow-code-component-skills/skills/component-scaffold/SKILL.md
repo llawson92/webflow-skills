@@ -1,5 +1,5 @@
 ---
-name: component-scaffold
+name: webflow-code-component:component-scaffold
 description: Generate new Webflow Code Component boilerplate with React component, definition file, and optional styling. Automatically checks prerequisites and can set up missing config/dependencies.
 compatibility: Node.js 18+, React 18+, TypeScript, @webflow/webflow-cli
 metadata:

@@ -1,5 +1,5 @@
 ---
-name: local-dev-setup
+name: webflow-code-component:local-dev-setup
 description: Initialize a new Webflow Code Components project from scratch. Creates project structure, installs dependencies, configures webflow.json, and sets up development environment.
 compatibility: Node.js 18+, React 18+, TypeScript, @webflow/webflow-cli
 metadata:

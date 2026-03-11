@@ -1,5 +1,5 @@
 ---
-name: convert-component
+name: webflow-code-component:convert-component
 description: Convert an existing React component into a Webflow Code Component. Analyzes TypeScript props, maps to Webflow prop types, generates the .webflow.tsx definition file, and identifies required modifications.
 compatibility: Node.js 18+, React 18+, TypeScript, @webflow/webflow-cli
 metadata:
