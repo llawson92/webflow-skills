@@ -21,11 +21,14 @@ Initialize new projects from templates, build applications, and deploy to Webflo
 **Non-Interactive Deployment (CRITICAL for agents and automation):**
 The Webflow CLI is interactive by default (environment selection prompts, mount path prompts, update checks). Since AI agents and CI/CD pipelines cannot interact with interactive prompts, you MUST always use these flags together for deployment:
 - `--no-input` — Disables all interactive prompts (environment selection, confirmations, etc.)
-- `--mount <MOUNT_PATH>` — REQUIRED with `--no-input` to avoid `ENVIRONMENT_MOUNT_MISMATCH` errors. Extract the mount path from the existing environment (visible in the interactive prompt output or webflow.json config). Common values: `/app`, `/`.
+- `--mount <MOUNT_PATH>` — REQUIRED with `--no-input` to avoid `ENVIRONMENT_MOUNT_MISMATCH` errors. You MUST determine the correct mount path before deploying — see below.
 - `--skip-mount-path-check` — Skips interactive mount path validation
 - `--skip-update-check` — Skips the interactive package update check
 
-**Determining the mount path:** Before deploying, check the project's existing environment mount path. If this is a first deploy, ask the user. For existing projects, the mount path was set during `cloud init -m <path>` or the first deploy.
+**Determining the mount path (NEVER assume a default):**
+The mount path varies between projects (e.g., `/app`, `/`, `/blog`). Assuming a common default like `/app` WILL cause deployment failures if the project uses a different path. The Webflow CLI does NOT persist the mount path to `webflow.json` after init or deploy, so it is often not available in local config. Follow these steps in order:
+1. **Check `webflow.json`** — Read the `cloud` section and look for a `mount` or `mountPath` field. It is usually NOT present, but check anyway.
+2. **Ask the user** — If the mount path is not in `webflow.json` (which is the common case), you MUST ask the user before deploying: _"What mount path does this project use? (e.g., /app, /, /blog)"_. Do NOT guess, do NOT assume `/app`, and do NOT proceed without a confirmed mount path.
 
 The canonical non-interactive deploy command is:
 ```bash
@@ -67,7 +70,9 @@ Add `--auto-publish` if the user wants changes published immediately.
 12. **Read project configuration**: Examine `webflow.json` cloud section:
     - `projectId`: Cloud project identifier (set automatically on first deploy)
     - `framework`: Either "nextjs" or "astro"
-13. **Validate project structure**:
+    - `mount` or `mountPath`: Mount path (may or may not be present)
+13. **Determine mount path**: Follow the "Determining the mount path" steps above. If the mount path is not in `webflow.json`, ask the user before proceeding. NEVER default to `/app` or any other value.
+14. **Validate project structure**:
     - Required files present
     - Build scripts configured
     - webflow.json has cloud configuration
@@ -580,6 +585,7 @@ webflow cloud init -f nextjs -m /app -s <site-id>
 **Configuration Fields:**
 - **projectId**: Cloud project identifier (automatically set by CLI on first deploy)
 - **framework**: Framework preset - either "nextjs" or "astro"
+- **mount path**: NOT stored in webflow.json by the CLI. You must ask the user for it if deploying an existing project.
 
 **Authentication Check:**
 ```bash
