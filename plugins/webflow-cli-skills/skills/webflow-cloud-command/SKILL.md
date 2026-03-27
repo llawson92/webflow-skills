@@ -18,6 +18,24 @@ Initialize new projects from templates, build applications, and deploy to Webflo
 - DO NOT use Webflow MCP tools for CLI workflows
 - All CLI commands require proper descriptions (not context parameters)
 
+**Non-Interactive Deployment (CRITICAL for agents and automation):**
+The Webflow CLI is interactive by default (environment selection prompts, mount path prompts, update checks). Since AI agents and CI/CD pipelines cannot interact with interactive prompts, you MUST always use these flags together for deployment:
+- `--no-input` — Disables all interactive prompts (environment selection, confirmations, etc.)
+- `--mount <MOUNT_PATH>` — REQUIRED with `--no-input` to avoid `ENVIRONMENT_MOUNT_MISMATCH` errors. You MUST determine the correct mount path before deploying — see below.
+- `--skip-mount-path-check` — Skips interactive mount path validation
+- `--skip-update-check` — Skips the interactive package update check
+
+**Determining the mount path (NEVER assume a default):**
+The mount path varies between projects (e.g., `/app`, `/`, `/blog`). Assuming a common default like `/app` WILL cause deployment failures if the project uses a different path. The Webflow CLI does NOT persist the mount path to `webflow.json` after init or deploy, so it is often not available in local config. Follow these steps in order:
+1. **Check `webflow.json`** — Read the `cloud` section and look for a `mount` or `mountPath` field. It is usually NOT present, but check anyway.
+2. **Ask the user** — If the mount path is not in `webflow.json` (which is the common case), you MUST ask the user before deploying: _"What mount path does this project use? (e.g., /app, /, /blog)"_. Do NOT guess, do NOT assume `/app`, and do NOT proceed without a confirmed mount path.
+
+The canonical non-interactive deploy command is:
+```bash
+webflow cloud deploy --no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check
+```
+Add `--auto-publish` if the user wants changes published immediately.
+
 **Package Manager Detection:**
 - Check for lock files: `package-lock.json` (npm), `pnpm-lock.yaml` (pnpm), `yarn.lock` (yarn)
 - If no lock file found, ask user which package manager to use (npm/pnpm/yarn)
@@ -52,7 +70,9 @@ Initialize new projects from templates, build applications, and deploy to Webflo
 12. **Read project configuration**: Examine `webflow.json` cloud section:
     - `projectId`: Cloud project identifier (set automatically on first deploy)
     - `framework`: Either "nextjs" or "astro"
-13. **Validate project structure**:
+    - `mount` or `mountPath`: Mount path (may or may not be present)
+13. **Determine mount path**: Follow the "Determining the mount path" steps above. If the mount path is not in `webflow.json`, ask the user before proceeding. NEVER default to `/app` or any other value.
+14. **Validate project structure**:
     - Required files present
     - Build scripts configured
     - webflow.json has cloud configuration
@@ -76,14 +96,14 @@ Initialize new projects from templates, build applications, and deploy to Webflo
 19. **Require explicit confirmation**: User must type "deploy" to proceed
 
 ### Phase 5: Deployment Execution
-20. **Execute deploy command**: Run `webflow cloud deploy` with options:
-    - `--env` or `-e`: Environment name (for CI/CD)
-    - `--mount` or `-m`: Mount path (e.g., `/app`)
-    - `--project-name` or `-p`: Project name (for new projects)
-    - `--directory` or `-d`: Project directory path
-    - `--description` or `-d`: Project description
-    - `--skip-mount-path-check`: Skip interactive prompts
-    - `--auto-publish`: Publish site after deployment
+20. **Execute deploy command**: Run `webflow cloud deploy` with non-interactive flags:
+    - `--no-input`: REQUIRED — disables all interactive prompts
+    - `--mount` or `-m`: REQUIRED — mount path (e.g., `/app`). Must match the existing environment's mount path.
+    - `--skip-mount-path-check`: REQUIRED — skips interactive mount path validation
+    - `--skip-update-check`: RECOMMENDED — skips interactive package update check
+    - `--auto-publish`: Optional — publish site after deployment
+    - `--project-name` or `-p`: Project name (for new projects only)
+    - `-e` or `--environment`: Environment name (defaults to first available with `--no-input`)
 21. **Monitor deployment progress**: Show CLI output and deployment stages
 22. **Verify deployment success**: Confirm deployment completed
 23. **Provide post-deployment information**:
@@ -296,13 +316,10 @@ First Deployment:
 ```
 🚀 Deploying to Webflow Cloud
 
-Executing: webflow cloud deploy
+Executing: webflow cloud deploy --no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check
 
 Output:
 ✓ Authenticating with Webflow...
-
-[Browser opens for authentication]
-
 ✓ Site authenticated
 ✓ Creating Cloud project
 ✓ Uploading build artifacts (1.2 MB)
@@ -370,7 +387,7 @@ Authentication: Using saved credentials
 ```
 🚀 Updating Cloud Deployment
 
-Executing: webflow cloud deploy
+Executing: webflow cloud deploy --no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check
 
 Output:
 ✓ Using project: proj_abc123xyz
@@ -414,7 +431,7 @@ For automated deployments, use non-interactive mode with options.
 
 3. **Deployment Command**
    ```bash
-   webflow cloud deploy --env production --mount /app --auto-publish
+   webflow cloud deploy --no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check --auto-publish
    ```
 
 ### Example: GitHub Actions
@@ -448,10 +465,11 @@ jobs:
       - name: Deploy to Webflow Cloud
         run: |
           webflow cloud deploy \
-            --env production \
+            --no-input \
             --mount /app \
-            --auto-publish \
-            --skip-mount-path-check
+            --skip-mount-path-check \
+            --skip-update-check \
+            --auto-publish
         env:
           WEBFLOW_SITE_ID: ${{ secrets.WEBFLOW_SITE_ID }}
           WEBFLOW_SITE_API_TOKEN: ${{ secrets.WEBFLOW_SITE_API_TOKEN }}
@@ -462,29 +480,21 @@ jobs:
 **Environment Management:**
 ```bash
 # Deploy to specific environment
-webflow cloud deploy --env staging -m /app
+webflow cloud deploy --no-input -e staging -m <MOUNT_PATH> --skip-mount-path-check --skip-update-check
 
 # Deploy to production with auto-publish
-webflow cloud deploy --env production -m /app --auto-publish
+webflow cloud deploy --no-input -e production -m <MOUNT_PATH> --skip-mount-path-check --skip-update-check --auto-publish
 ```
 
 **New Project Deployment:**
 ```bash
 # Deploy new project with name and description
-webflow cloud deploy \
+webflow cloud deploy --no-input \
   --project-name "Acme App" \
   --description "Production deployment" \
-  --mount /app \
-  --auto-publish
-```
-
-**Non-Interactive (CI/CD):**
-```bash
-# Skip all interactive prompts
-webflow cloud deploy \
-  --env production \
-  --mount /app \
+  --mount <MOUNT_PATH> \
   --skip-mount-path-check \
+  --skip-update-check \
   --auto-publish
 ```
 
@@ -575,6 +585,7 @@ webflow cloud init -f nextjs -m /app -s <site-id>
 **Configuration Fields:**
 - **projectId**: Cloud project identifier (automatically set by CLI on first deploy)
 - **framework**: Framework preset - either "nextjs" or "astro"
+- **mount path**: NOT stored in webflow.json by the CLI. You must ask the user for it if deploying an existing project.
 
 **Authentication Check:**
 ```bash
@@ -641,41 +652,42 @@ Explain clearly:
 ### Phase 5: Deployment Execution
 
 **Deploy Command:**
+
+IMPORTANT: The Webflow CLI is interactive by default. Always use `--no-input` and `--mount` together to avoid interactive prompts that agents cannot handle.
+
 ```bash
-# Basic deploy
-webflow cloud deploy
-
-# With environment
-webflow cloud deploy --env production
-
-# With mount path
-webflow cloud deploy --mount /app
+# Standard non-interactive deploy (use this by default)
+webflow cloud deploy --no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check
 
 # With auto-publish (publishes site after deploy)
-webflow cloud deploy --env production --mount /app --auto-publish
+webflow cloud deploy --no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check --auto-publish
 
-# New project with name
-webflow cloud deploy \
+# New project with name (first deploy)
+webflow cloud deploy --no-input \
   --project-name "My App" \
-  --description "Production deployment" \
-  --mount /app
-
-# CI/CD (non-interactive)
-webflow cloud deploy \
-  --env production \
-  --mount /app \
+  --mount <MOUNT_PATH> \
   --skip-mount-path-check \
+  --skip-update-check
+
+# With specific environment
+webflow cloud deploy --no-input \
+  -e production \
+  --mount <MOUNT_PATH> \
+  --skip-mount-path-check \
+  --skip-update-check \
   --auto-publish
 ```
 
 **Deploy Options:**
-- `--env` / `-e`: Environment name to deploy to
-- `--mount` / `-m`: Path to mount project (e.g., /app)
+- `--no-input`: REQUIRED for agents — disables all interactive prompts
+- `--mount` / `-m`: REQUIRED — path to mount project. Must match the existing environment's mount path.
+- `--skip-mount-path-check`: REQUIRED for agents — skips interactive mount path validation
+- `--skip-update-check`: RECOMMENDED — skips interactive package update check
+- `--auto-publish`: Publish the site after deployment
+- `-e` / `--environment`: Environment name to deploy to
 - `--project-name` / `-p`: Project name (for new projects)
 - `--directory` / `-d`: Project directory if not in root
-- `--description` / `-d`: Project description (for new projects)
-- `--skip-mount-path-check`: Skip interactive mount path prompts
-- `--auto-publish`: Publish the site after deployment
+- `--description`: Project description (for new projects)
 
 **Success Indicators:**
 - Build artifacts uploaded
@@ -869,16 +881,16 @@ Elapsed: 25s
 
 **Deployment:**
 - Always build before deploying
-- Use `--env` flag for different environments
+- Always use `--no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check` for non-interactive deploys
 - Use `--auto-publish` for production deployments
 - Test deployment before publishing site
 
 **CI/CD:**
 - Store credentials in secrets
-- Use non-interactive flags
-- Specify environment and mount path
+- Always use `--no-input` to disable all interactive prompts
+- Always specify `--mount` with the correct path
 - Enable auto-publish for production
-- Skip mount path checks with flag
+- Use `--skip-mount-path-check` and `--skip-update-check`
 
 **Environment Management:**
 - Use .env for local development
@@ -900,12 +912,14 @@ Elapsed: 25s
 - `-m` / `--mount` - Mount path
 - `-s` / `--site-id` - Site ID
 
-**Deploy Options:**
-- `-e` / `--env` - Environment name
-- `-m` / `--mount` - Mount path
-- `-p` / `--project-name` - Project name
+**Deploy Options (for agents/automation, always include first 4):**
+- `--no-input` - REQUIRED: disable interactive prompts
+- `-m` / `--mount` - REQUIRED: mount path (must match existing environment)
+- `--skip-mount-path-check` - REQUIRED: skip mount path validation prompt
+- `--skip-update-check` - RECOMMENDED: skip update check prompt
 - `--auto-publish` - Publish after deploy
-- `--skip-mount-path-check` - No prompts
+- `-e` / `--environment` - Environment name
+- `-p` / `--project-name` - Project name (new projects)
 
 **Configuration:** webflow.json with cloud section
 
