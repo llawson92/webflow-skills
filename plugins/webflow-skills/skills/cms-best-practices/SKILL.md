@@ -1296,7 +1296,7 @@ Let me know what you'd like me to check!
 ### Phase 1: Discovery Best Practices
 
 **Always Start With:**
-1. **Identify plan limits** - Use `sites_get` to check collection/item limits
+1. **Identify plan limits** - Use `data_sites_tool` with action `get_site` to check collection/item limits
 2. **Analyze existing structure** - List collections before recommending changes
 3. **Understand content volume** - Check item counts to assess scale
 4. **Review current pages** - See how content is currently displayed
