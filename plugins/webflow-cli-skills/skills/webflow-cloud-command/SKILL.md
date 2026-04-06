@@ -88,7 +88,7 @@ Flags:
 | Flag | Short | Description |
 |---|---|---|
 | `--project-name <name>` | `-n` | Project name. |
-| `--framework <framework>` | `-f` | Must match a scaffold ID from `cloud list`. Currently: `nextjs`, `astro`, `nextjs-minimal`, `astro-minimal`. |
+| `--framework <framework>` | `-f` | Must match a scaffold ID from `cloud list`. Currently: `nextjs`, `astro`. |
 | `--mount <path>` | `-m` | Mount path (default `/app` for site-attached, `/` for app). Substituted into config files at scaffold time. Not stored in `webflow.json`. |
 | `--site-id <id>` | `-s` | Required in non-interactive site-attached mode. |
 | `--new` | — | App mode (no site). |
@@ -113,7 +113,7 @@ webflow cloud init --new --no-input --project-name my-app --framework nextjs
 | OAuth / site selection | Required at init | Skipped |
 | `WEBFLOW_SITE_ID` in `.env` | Written | Not written |
 | `WEBFLOW_SITE_API_TOKEN` in `.env` | Written | Not written |
-| Scaffold | Full (`astro`, `nextjs`) | Minimal (`astro-minimal`, `nextjs-minimal`) |
+| Scaffold | `astro`, `nextjs` | `astro`, `nextjs` |
 | Mount path | Configurable (default `/app`) | Always `/` |
 | DevLink sync | Runs after init | Skipped |
 
@@ -168,9 +168,7 @@ All `cloud deploy` flags:
 | Framework | Init scaffold | Deploy support | Detected via package |
 |---|---|---|---|
 | `nextjs` | ✓ | ✓ | `@opennextjs/cloudflare` |
-| `nextjs-minimal` | ✓ (app) | ✓ | — |
 | `astro` | ✓ | ✓ | `@astrojs/cloudflare` |
-| `astro-minimal` | ✓ (app) | ✓ | — |
 | `remix` | — (existing projects only) | ✓ | `@remix-run/cloudflare` |
 
 Any other value in `cloud.framework` causes `cloud deploy` to exit with code 1.
