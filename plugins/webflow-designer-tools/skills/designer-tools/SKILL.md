@@ -16,7 +16,7 @@ Build, inspect, and manage page elements and components in the Webflow Designer.
 - Use Webflow MCP's `element_tool` with action `get_all_elements` to retrieve page elements
 - Use Webflow MCP's `element_tool` with action `select_element` to select a specific element
 - Use Webflow MCP's `element_tool` with action `add_or_update_attribute` to update element attributes
-- Use Webflow MCP's `element_builder` to create new elements (max 3 levels deep)
+- Use Webflow MCP's `element_builder` to create new elements
 - Use Webflow MCP's `element_snapshot_tool` to get visual previews of elements before and after changes
 - Use Webflow MCP's `style_tool` to create and update styles on elements
 - Use Webflow MCP's `de_learn_more_about_styles` to check supported style properties
