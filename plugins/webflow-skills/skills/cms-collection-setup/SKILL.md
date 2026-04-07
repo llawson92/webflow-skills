@@ -708,7 +708,7 @@ Relationships Configured:
 ### Phase 1: Discovery Best Practices
 
 **Site Selection:**
-- Always use `sites_list` to get available sites
+- Always use `data_sites_tool` with action `list_sites` to get available sites
 - Never assume site ID
 - Verify user has correct site selected
 
@@ -932,14 +932,14 @@ Field Type → Tool to use:
 
 PlainText, RichText, Email, Phone, Link, Number,
 Image, MultiImage, File, Video, DateTime, Switch, Color
-→ collection_fields_create_static
+→ data_cms_tool with action create_collection_static_field
 
 Option
-→ collection_fields_create_option
+→ data_cms_tool with action create_collection_option_field
    (requires metadata.options array)
 
 Reference, MultiReference
-→ collection_fields_create_reference
+→ data_cms_tool with action create_collection_reference_field
    (requires metadata.collectionId)
 ```
 

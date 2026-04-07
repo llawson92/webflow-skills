@@ -316,7 +316,7 @@ Fix item 2 or skip it? (fix/skip)
 ### Phase 1: Critical Requirements
 
 **Site & Collection Selection:**
-- Always fetch actual site list using `sites_list`
+- Always fetch actual site list using `data_sites_tool` with action `list_sites`
 - Never assume site IDs
 - Show collection names and item counts
 - Display field schema before accepting data
@@ -364,13 +364,13 @@ When fetching existing items for updates, use filter parameters to minimize API 
 
 ```
 # Good - Filter by name when you know the item name
-collections_items_list_items(collection_id, name: "Pikachu")
+data_cms_tool(action: "list_collection_items", collection_id, name: "Pikachu")
 
 # Good - Filter by slug when you know the slug
-collections_items_list_items(collection_id, slug: "pikachu")
+data_cms_tool(action: "list_collection_items", collection_id, slug: "pikachu")
 
 # Bad - Fetching all items then searching through results
-collections_items_list_items(collection_id)  # Returns 100 items
+data_cms_tool(action: "list_collection_items", collection_id)  # Returns 100 items
 # Then manually searching for "Pikachu" in results...
 ```
 
