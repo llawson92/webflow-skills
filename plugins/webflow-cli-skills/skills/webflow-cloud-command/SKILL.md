@@ -9,6 +9,125 @@ Initialize new projects from templates and deploy to Webflow Cloud. Supports two
 
 ## Instructions
 
+### Step 0: Verify CLI is installed
+
+```bash
+webflow --version
+```
+
+If the command is not found, install it:
+
+```bash
+npm install -g @webflow/webflow-cli
+# or yarn global add @webflow/webflow-cli
+# or pnpm add -g @webflow/webflow-cli
+```
+
+Then proceed to state detection.
+
+### Step 1: Detect project state
+
+Run both checks before deciding which path to follow:
+
+```bash
+# Is this project already set up on Webflow Cloud?
+cat webflow.json
+
+# Is there a git remote?
+git remote get-url origin 2>/dev/null
+```
+
+**Quick reference:**
+
+| `cloud.project_id` in `webflow.json` | git remote | → Path |
+|---|---|---|
+| No | — | **A** — new project |
+| Yes | No | **B** — existing project, no git |
+| Yes | Yes | **C** — ideal state |
+
+---
+
+### Path A: No `project_id` — new project
+
+The project has not been deployed yet. Scaffold and deploy from scratch.
+
+1. **Scaffold the project:**
+   ```bash
+   webflow cloud init
+   ```
+   Use `--new` for a standalone app (no Webflow site), or connect to a site interactively. See [`cloud init`](#webflow-cloud-init) for all flags.
+
+2. **Deploy:**
+   ```bash
+   webflow cloud deploy \
+     --no-input \
+     --project-name my-app \
+     --mount / \
+     --environment main \
+     --skip-mount-path-check \
+     --skip-update-check
+   ```
+   This creates the project on Webflow Cloud and sets `cloud.project_id` in `webflow.json`. Commit the updated `webflow.json`.
+
+3. **Set up git** (if not already):
+   ```bash
+   git init && git add . && git commit -m "init"
+   git remote add origin https://github.com/your-org/my-app.git
+   git push -u origin main
+   ```
+   From this point, every push to the connected branch triggers an automatic deploy.
+
+> If a deploy auth error occurs: run `webflow auth login`, complete the browser flow, then retry step 2.
+
+---
+
+### Path B: `project_id` exists, no git remote — existing project, no git
+
+The project is already on Webflow Cloud but has no git repo. Deploy directly and nudge toward git setup.
+
+1. **Deploy:**
+   ```bash
+   webflow cloud deploy \
+     --no-input \
+     --mount / \
+     --environment main \
+     --skip-mount-path-check \
+     --skip-update-check
+   ```
+
+2. **Nudge toward git:** suggest the user initializes a git repo and pushes to GitHub to unlock commit-push-deploy automation (see Path A, step 3).
+
+> If a deploy auth error occurs: run `webflow auth login`, complete the browser flow, then retry step 1.
+
+---
+
+### Path C: `project_id` exists + git remote — ideal state
+
+The project is deployed and connected. Confirm before suggesting anything.
+
+> **Before making any suggestions:** ask the user whether the repo is already linked to Webflow Cloud. If it is, the only action needed is `git push`. Do not suggest re-linking or re-deploying.
+
+1. **If already connected** — just commit and push:
+   ```bash
+   git add .
+   git commit -m "your message"
+   git push
+   ```
+   Webflow Cloud picks up the push and deploys automatically.
+
+2. **If not yet connected** — run a manual deploy to complete the link:
+   ```bash
+   webflow cloud deploy \
+     --no-input \
+     --mount / \
+     --environment main \
+     --skip-mount-path-check \
+     --skip-update-check
+   ```
+   After this deploy, commit-push-deploy is active.
+
+> If a deploy auth error occurs: run `webflow auth login`, complete the browser flow, then retry.
+
 ### Tool usage
 
 - Use the **Bash tool** for all `webflow cloud` commands
@@ -181,6 +300,31 @@ Any other value in `cloud.framework` causes `cloud deploy` to exit with code 1.
 | `--manifest <path>` | Custom path to `webflow.json`. Use for monorepos. |
 | `--skip-update-check` | Skip @webflow package update check. Alternatively, set `WEBFLOW_SKIP_UPDATE_CHECKS=true`. |
 
+## Output
+
+After a successful `cloud deploy`, the CLI prints two pieces of output.
+
+**1. Deployment dashboard URL** — always present on success:
+
+```
+https://webflow.com/dashboard/sites/{siteId}/webflow-cloud/projects/{projectId}/environments/{environmentId}/deployments/{deploymentId}
+```
+
+Always show this to the user. From here they can view build logs, deployment status, history, and environment settings.
+
+**2. Live app URL** — conditional:
+
+```
+🌐 Your cloud app will soon be available at:
+   https://{your-site}.webflow.io/{mount-path}
+```
+
+If a real URL is printed, show it to the user as the live app link. The domain is their Webflow site's domain and the path is whatever `--mount` value was used at deploy time (e.g. `/`, `/app`, or any other user-chosen path).
+
+If the output instead reads `No domains found with the correct mount path configuration yet.`, do not show a live URL — point the user to the dashboard deployment link above to check status and configure their domain.
+
+**Do not** fetch or curl either URL to verify the deploy — just return what the CLI printed.
+
 ## Examples
 
 ### Full workflow: scaffold → GitHub → auto-deploy (recommended)
@@ -324,3 +468,41 @@ Commit all changes before deploying to production.
 - No `--json` / structured output — deploy URL and project ID must be parsed from stdout.
 - No `cloud rollback`.
 - **100 MB build size limit** — builds exceeding 104,857,600 bytes fail at upload.
+
+## Troubleshooting
+
+### Auth error on deploy
+
+Run `webflow auth login` and complete the browser flow. The CLI writes a new `WEBFLOW_SITE_API_TOKEN` to `.env`. Retry the deploy after login.
+
+In CI, browser auth is not possible — an auth error means `WEBFLOW_SITE_API_TOKEN` is missing or expired in your secrets. Fix the secret, do not attempt `webflow auth login`.
+
+### Deploying to a different workspace
+
+Workspace context is **token-bound** — there is no `--workspace` flag. To deploy to a different workspace, re-run `webflow auth login` and select the target workspace in the browser. The new token will be written to `.env` and subsequent deploys will target that workspace.
+
+### `ENVIRONMENT_MOUNT_MISMATCH`
+
+The `--mount` value does not match the path registered for that environment. Check the Webflow dashboard under the project's environment settings for the correct mount path and pass it explicitly.
+
+### `webflow.json` exists but deploy fails on framework
+
+If the error is _"webflow.json exists but doesn't contain valid framework information"_, add the `cloud` key manually:
+
+```json
+{
+  "cloud": {
+    "framework": "nextjs"
+  }
+}
+```
+
+Valid values: `nextjs`, `astro`, `remix`. Any other value exits with code 1.
+
+### Build fails, need full trace
+
+```bash
+webflow log
+```
+
+Prints the path to the latest log file with the full error trace.
