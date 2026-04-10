@@ -144,7 +144,7 @@ For development and one-off deploys:
 webflow cloud deploy \
   --no-input \
   --mount / \
-  --environment production \
+  --environment main \
   --skip-mount-path-check \
   --skip-update-check
 ```
@@ -238,7 +238,7 @@ jobs:
           webflow cloud deploy \
             --no-input \
             --mount / \
-            --environment production \
+            --environment main \
             --skip-mount-path-check \
             --skip-update-check
         env:
@@ -254,7 +254,7 @@ webflow cloud deploy \
   --no-input \
   --project-name my-app \
   --mount / \
-  --environment production \
+  --environment main \
   --skip-mount-path-check \
   --skip-update-check
 ```
