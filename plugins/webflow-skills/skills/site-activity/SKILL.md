@@ -27,23 +27,25 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
 ## Instructions
 
 ### Phase 1: Site Selection & Context
-1. **Identify target site**: If the user does not provide a site ID, use `data_sites_tool` with action `list_sites`. The response includes `displayName`, `lastPublished`, and `lastUpdated` for each site — use these fields to present the list in this exact format:
+1. **Identify target site**: If the user does not provide a site ID, use `data_sites_tool` with action `list_sites`. The response includes `displayName`, `lastPublished`, and `lastUpdated` for each site — use these fields to present a one-line-per-site list in this exact format:
 
     ```
     📋 Site Activity — Site Selection
 
     Available Enterprise Sites:
 
-    1. **<Site Name>**
-       - Last published: <formatted date> UTC (or "Never published")
-       - Last updated: <formatted date> UTC
-       - ⚠️ Has unpublished changes   (only if lastUpdated > lastPublished)
-       - ✅ Up to date                 (only if lastUpdated <= lastPublished)
+    1. <Site Name> ⚠️  — last published <short date>, updated <short date> (<N> days unpublished)
+    2. <Site Name> ✅  — published & updated <short date>
+    3. <Site Name> ⚠️  — never published, updated <short date>
 
     Which site would you like to review? (1-N)
     ```
 
-    Do not omit the Last published / Last updated lines or the status flag — they are required for every site.
+    Format rules:
+    - Dates: abbreviated ("Mar 6", "Apr 14"). Add the year only if it isn't the current year.
+    - Use ⚠️ when `lastUpdated > lastPublished` OR `lastPublished` is null; ✅ when `lastUpdated <= lastPublished`.
+    - When `lastPublished == lastUpdated`, collapse the right-hand side to "published & updated <date>".
+    - Do not omit the status flag or the dates — they are required for every site.
 2. **Fetch selected-site details**: After the user selects a site (or when a site ID was provided up front), call `data_sites_tool` with action `get_site` **once, for the selected site only**, to retrieve fields not returned by `list_sites` — in particular:
     - Custom domains
     - Locale / localization settings
@@ -231,15 +233,8 @@ What happened on my site this week?
 
 Available Enterprise Sites:
 
-1. **Acme Corp Website**
-   - Last published: April 14, 2026 at 18:30 UTC
-   - Last updated: April 16, 2026 at 09:15 UTC
-   - ⚠️ Has unpublished changes
-
-2. **Acme Blog**
-   - Last published: April 10, 2026 at 12:00 UTC
-   - Last updated: April 10, 2026 at 12:00 UTC
-   - ✅ Up to date
+1. Acme Corp Website ⚠️  — last published Apr 14, updated Apr 16 (2 days unpublished)
+2. Acme Blog ✅  — published & updated Apr 10
 
 Which site would you like to review? (1-2)
 ```
