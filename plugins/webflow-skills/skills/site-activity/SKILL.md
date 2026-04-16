@@ -27,7 +27,15 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
 ## Instructions
 
 ### Phase 1: Site Selection & Context
-1. **Identify target site**: If the user does not provide a site ID, use `data_sites_tool` with action `list_sites`. The response includes `displayName`, `lastPublished`, and `lastUpdated` for each site — use these fields to present a one-line-per-site list in this exact format:
+1. **Identify target site**: If the user does not provide a site ID, use `data_sites_tool` with action `list_sites`. Each site in the response has `displayName`, `lastPublished`, and `lastUpdated`.
+
+    **Sort order**:
+    1. ⚠️ sites (unpublished changes) before ✅ sites (up to date)
+    2. Within each group, most recently updated first (by `lastUpdated` descending)
+
+    **Truncation**: Show the top **10** sites only. If there are more than 10 total, append a line `…and N more sites. Reply "show all" to see the rest.` below the list. When the user replies "show all" (or similar), re-present the full list in the same format.
+
+    Present the list in this exact format:
 
     ```
     📋 Site Activity — Site Selection
@@ -38,13 +46,16 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
     2. <Site Name> ✅  — published & updated <short date>
     3. <Site Name> ⚠️  — never published, updated <short date>
 
-    Which site would you like to review? (1-N)
+    …and 4 more sites. Reply "show all" to see the rest.
+
+    Which site would you like to review?
     ```
 
     Format rules:
     - Dates: abbreviated ("Mar 6", "Apr 14"). Add the year only if it isn't the current year.
     - Use ⚠️ when `lastUpdated > lastPublished` OR `lastPublished` is null; ✅ when `lastUpdated <= lastPublished`.
     - When `lastPublished == lastUpdated`, collapse the right-hand side to "published & updated <date>".
+    - Omit the "…and N more sites" line when the workspace has 10 or fewer sites.
     - Do not omit the status flag or the dates — they are required for every site.
 2. **Fetch selected-site details**: After the user selects a site (or when a site ID was provided up front), call `data_sites_tool` with action `get_site` **once, for the selected site only**, to retrieve fields not returned by `list_sites` — in particular:
     - Custom domains
@@ -236,7 +247,7 @@ Available Enterprise Sites:
 1. Acme Corp Website ⚠️  — last published Apr 14, updated Apr 16 (2 days unpublished)
 2. Acme Blog ✅  — published & updated Apr 10
 
-Which site would you like to review? (1-2)
+Which site would you like to review?
 ```
 
 **Step 2: Activity Summary**
