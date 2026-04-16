@@ -14,6 +14,7 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
 - Use Webflow MCP's `data_sites_tool` with action `list_sites` for listing available sites
 - Use Webflow MCP's `data_sites_tool` with action `get_site` for detailed site information
 - Use Webflow MCP's `data_enterprise_tool` with action `list_site_activity_logs` for retrieving activity log events
+- Use Webflow MCP's `webflow_guide_tool` to get best practices before starting
 - DO NOT use any other tools or methods for Webflow operations
 - All tool calls must include the required `context` parameter (15-25 words, third-person perspective)
 
@@ -34,12 +35,14 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
     - Last published date
     - Last updated date
     - Custom domains
-4. **Clarify intent**: Determine what the user is looking for:
+4. **Infer intent from the prompt** (do not ask a follow-up question if the prompt is clear). Map the request to one of:
     - Recent activity summary ("what changed this week?")
     - Specific user's activity ("what did Sarah change?")
     - Specific activity type ("any CMS changes recently?")
     - Pre-publish review ("what's changed since last publish?")
-    - General overview (default)
+    - General overview (default when the prompt is ambiguous)
+
+    Only ask a clarifying question if the request is genuinely ambiguous (e.g., "show me activity" with no time window, user, or event type context).
 
 ### Phase 2: Fetch Activity Logs
 5. **Fetch activity logs**: Use `list_site_activity_logs` with the site ID
@@ -129,6 +132,7 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
     - By user (match on `user.displayName`)
     - By time window (filter `createdOn` timestamps client-side)
     - By resource (match on `resourceName`)
+    - **Pre-publish review**: When the user wants to see changes since the last publish, use the site's `lastPublished` timestamp (from Phase 1) and filter to events where `createdOn > lastPublished`. If `lastPublished` is null (never published), all events qualify as unpublished.
 10. **Generate insights**:
     - Most active users in the time period
     - Most frequently changed resources
@@ -413,7 +417,7 @@ Generated from Webflow Site Activity Log
 - Group activity by user when multiple users are active
 - Show user display names, not IDs
 - Highlight concentration of activity (one user doing 80%+ of changes)
-A
+
 ### Reporting Formats
 
 **Default — Structured Summary:**
