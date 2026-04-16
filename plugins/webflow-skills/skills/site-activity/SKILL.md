@@ -7,7 +7,6 @@ description: Query and summarize site activity logs for a Webflow enterprise sit
 
 Query, analyze, and summarize Webflow site activity logs for enterprise sites. Provides natural-language querying of recent changes, filtered summaries by event type or user, and formatted reports for team sharing.
 
-
 ## Important Note
 
 **ALWAYS use Webflow MCP tools for all operations:**
@@ -28,13 +27,30 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
 ## Instructions
 
 ### Phase 1: Site Selection & Context
-1. **Identify target site**: If the user does not provide a site ID, use `data_sites_tool` with action `list_sites` to list available sites and ask the user to select one.
+1. **Identify target site**: If the user does not provide a site ID, use `data_sites_tool` with action `list_sites`. The response includes `displayName`, `lastPublished`, and `lastUpdated` for each site — use these fields to present the list in this exact format:
+
+    ```
+    📋 Site Activity — Site Selection
+
+    Available Enterprise Sites:
+
+    1. **<Site Name>**
+       - Last published: <formatted date> UTC (or "Never published")
+       - Last updated: <formatted date> UTC
+       - ⚠️ Has unpublished changes   (only if lastUpdated > lastPublished)
+       - ✅ Up to date                 (only if lastUpdated <= lastPublished)
+
+    Which site would you like to review? (1-N)
+    ```
+
+    Do not omit the Last published / Last updated lines or the status flag — they are required for every site.
 2. **Verify enterprise plan**: The `list_site_activity_logs` tool requires an Enterprise hosting plan. If the call fails with a permissions error, inform the user that site activity logs are an enterprise-only feature.
-3. **Fetch site details**: Use Webflow MCP's `data_sites_tool` with action `get_site` to retrieve:
-    - Site name and ID
-    - Last published date
-    - Last updated date
+3. **Fetch selected-site details**: After the user selects a site (or when a site ID was provided up front), call `data_sites_tool` with action `get_site` **once, for the selected site only**, to retrieve fields not returned by `list_sites` — in particular:
     - Custom domains
+    - Locale / localization settings
+    - Any additional site metadata needed for the analysis
+
+    `lastPublished` and `lastUpdated` are already known from step 1 (or from `get_site` if the user provided a site ID directly). Keep these in memory for the pre-publish filter in Phase 3.
 4. **Infer intent from the prompt** (do not ask a follow-up question if the prompt is clear). Map the request to one of:
     - Recent activity summary ("what changed this week?")
     - Specific user's activity ("what did Sarah change?")
@@ -133,14 +149,12 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
     - By time window (filter `createdOn` timestamps client-side)
     - By resource (match on `resourceName`)
     - **Pre-publish review**: When the user wants to see changes since the last publish, use the site's `lastPublished` timestamp (from Phase 1) and filter to events where `createdOn > lastPublished`. If `lastPublished` is null (never published), all events qualify as unpublished.
-10. **Generate insights**:
-    - Most active users in the time period
-    - Most frequently changed resources
-    - Event type distribution
-    - Timeline of activity (busiest days/hours)
-    - Burst of activity (many changes in a short period)
-    - Single-user concentration (one person made most changes)
-    - Unpublished changes (activity after last publish)
+10. **Generate insights** (include in the Highlights section of the report):
+    - Most active user in the time period
+    - Event type distribution (which category dominated)
+    - Busiest day or hour
+    - Single-user concentration (flag when one person made 40%+ of changes)
+    - Unpublished changes (count of events where `createdOn > lastPublished`)
 
 ### Phase 4: Reporting
 11. **Generate summary report**: Present findings in a clear, structured format:
@@ -150,11 +164,13 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
     - Breakdown by user
     - Notable patterns or highlights
 12. **Answer the user's specific question**: If the user asked something specific, lead with the direct answer
-13. **Offer detail levels**:
-    - Quick summary: Event counts by category
-    - Standard report: Categorized events with user attribution
-    - Detailed report: Every event with full payload details
-    - Export: Formatted for sharing (Markdown or structured text)
+13. **Pick the detail level** from the prompt:
+    - "counts only" / "how many" / "just numbers" → **Quick summary** (counts by category only)
+    - default → **Standard report** (categorized events with user attribution — see Example 1)
+    - "walk me through" / "show every change" / "timeline" → **Detailed report** (chronological per-event view with payload)
+    - "share" / "export" / "for my team" / "summary to send" → **Shareable/Export report** (see Example 3)
+
+    The detail-level switch is always surfaced as one of the follow-up options in step 15 so the user can request a different level.
 14. **Provide actionable context**: Highlight notable patterns such as:
     - High-frequency changes to a single page or collection
     - Multiple users editing the same resource
@@ -169,7 +185,8 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
     1. Filter by a specific user
     2. Filter by activity type
     3. Fetch older activity (pagination)
-    4. Export as markdown or JSON
+    4. Switch to a quick summary (counts only) or a detailed view (per-event payloads)
+    5. Export as markdown or JSON
     ```
 
     If the report was a shareable/export format (e.g., "summary I can share"), place this block **outside** the shareable content so the user can copy the report cleanly without the follow-up menu in it.
@@ -210,7 +227,6 @@ Different event types include different payload fields:
 
 ## Examples
 
-
 **User prompt:**
 ```
 What happened on my site this week?
@@ -239,6 +255,8 @@ Which site would you like to review? (1-2)
 ```
 📋 Site Activity: Acme Corp Website
    April 10–16, 2026 (93 events)
+
+**93 events this week from 3 team members. 28 are unpublished since the last publish on Apr 14.**
 
 ---
 
@@ -284,7 +302,8 @@ Would you like to:
 1. Filter by a specific user
 2. Filter by activity type
 3. See details for unpublished changes only
-4. Fetch older activity
+4. Switch to a quick summary (counts only) or detailed view (per-event payloads)
+5. Fetch older activity
 ```
 
 **User prompt:**
@@ -295,44 +314,35 @@ Show me CMS changes on site 6924868ede9d3fbbc3195eb0
 **Response:**
 ```
 📋 CMS Activity: Acme Corp Website
-   April 10–16, 2026
+   April 10–16, 2026 (18 CMS events)
+
+**18 CMS events from 2 users over 5 days. 3 changes are unpublished.**
 
 ---
 
-## CMS Changes (18 events)
+## CMS Breakdown
 
-**April 16**
-├── 09:15 — Sarah Chen — CMS item modified
-├── 09:10 — Sarah Chen — CMS item modified
-└── 08:45 — Sarah Chen — CMS item created
-
-**April 15**
-├── 17:30 — Alex Kim — CMS item modified
-├── 16:20 — Alex Kim — CMS items published (bulk)
-├── 16:15 — Alex Kim — CMS item modified
-├── 16:10 — Alex Kim — CMS item modified
-├── 15:55 — Alex Kim — CMS item created
-├── 14:30 — Sarah Chen — CMS item modified
-├── 14:00 — Sarah Chen — CMS collection modified
-└── 11:20 — Sarah Chen — CMS item created
-
-**April 14**
-├── 16:45 — Alex Kim — CMS item modified
-├── 15:30 — Alex Kim — CMS item created
-└── 14:00 — Sarah Chen — CMS item modified
-
-**April 12**
-├── 11:00 — Sarah Chen — CMS item modified
-├── 10:45 — Sarah Chen — CMS item modified
-├── 10:30 — Sarah Chen — CMS item created
-└── 10:00 — Sarah Chen — CMS collection modified
+📝 Items modified       11 events
+➕ Items created         5 events
+📚 Collection changes    2 events
 
 ---
 
+## Activity by User
 
-Summary: 18 CMS events by 2 users over 5 days
-- 5 items created, 11 items modified, 2 collection changes
-- ⚠️ 3 CMS changes are unpublished (after Apr 14 publish)
+**Sarah Chen** — 10 events
+└── 2 items created, 7 items modified, 1 collection modified
+
+**Alex Kim** — 8 events
+└── 3 items created, 4 items modified, 1 bulk publish
+
+---
+
+## Highlights
+
+- ⚠️ **Unpublished**: 3 CMS changes since last publish (Apr 14)
+- 📊 **Busiest day**: April 15 (8 events)
+- 📚 **Schema changes**: 2 collection edits this week (review carefully before publish)
 
 ---
 
@@ -340,13 +350,16 @@ Would you like to:
 1. Filter to a specific collection
 2. Filter by user (Sarah or Alex)
 3. See only the unpublished CMS changes
-4. Fetch older CMS activity
+4. Switch to a timeline view (chronological per-event) or counts only
+5. Fetch older CMS activity
 ```
 
 **User prompt:**
 ```
-Give me a weekly summary I can share with my team
+Give me a weekly summary I can share with my team for Acme Corp Website
 ```
+
+(Naming the site inline skips Phase 1 step 1. If the user doesn't name a site, run the site-selection list first before producing this report.)
 
 **Response:**
 ```
@@ -388,8 +401,8 @@ Would you like to:
 1. Filter to a specific user's changes
 2. Break down unpublished changes in detail
 3. Regenerate with a different date range
-4. Export as JSON instead of markdown
-
+4. Switch to a quick summary (counts only) or detailed per-event view
+5. Export as JSON instead of markdown
 
 ## Guidelines
 
