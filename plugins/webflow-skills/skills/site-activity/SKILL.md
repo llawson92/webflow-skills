@@ -44,14 +44,13 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
     ```
 
     Do not omit the Last published / Last updated lines or the status flag — they are required for every site.
-2. **Verify enterprise plan**: The `list_site_activity_logs` tool requires an Enterprise hosting plan. If the call fails with a permissions error, inform the user that site activity logs are an enterprise-only feature.
-3. **Fetch selected-site details**: After the user selects a site (or when a site ID was provided up front), call `data_sites_tool` with action `get_site` **once, for the selected site only**, to retrieve fields not returned by `list_sites` — in particular:
+2. **Fetch selected-site details**: After the user selects a site (or when a site ID was provided up front), call `data_sites_tool` with action `get_site` **once, for the selected site only**, to retrieve fields not returned by `list_sites` — in particular:
     - Custom domains
     - Locale / localization settings
     - Any additional site metadata needed for the analysis
 
     `lastPublished` and `lastUpdated` are already known from step 1 (or from `get_site` if the user provided a site ID directly). Keep these in memory for the pre-publish filter in Phase 3.
-4. **Infer intent from the prompt** (do not ask a follow-up question if the prompt is clear). Map the request to one of:
+3. **Infer intent from the prompt** (do not ask a follow-up question if the prompt is clear). Map the request to one of:
     - Recent activity summary ("what changed this week?")
     - Specific user's activity ("what did Sarah change?")
     - Specific activity type ("any CMS changes recently?")
@@ -61,16 +60,16 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
     Only ask a clarifying question if the request is genuinely ambiguous (e.g., "show me activity" with no time window, user, or event type context).
 
 ### Phase 2: Fetch Activity Logs
-5. **Fetch activity logs**: Use `list_site_activity_logs` with the site ID
+4. **Fetch activity logs**: Use `list_site_activity_logs` with the site ID
     - Default to `limit: 100` (maximum per request) for comprehensive results
     - The API returns events in reverse chronological order (newest first)
-6. **Handle pagination**: If the user needs older activity or the results suggest more data exists:
+5. **Handle pagination**: If the user needs older activity or the results suggest more data exists:
     - Use `offset` parameter to fetch additional pages
     - Combine results across pages for analysis
     - Warn the user if going back further than available data
 
 ### Phase 3: Analysis & Summarization
-7. **Parse each activity log entry**: Each event contains:
+6. **Parse each activity log entry**: Each event contains:
     - `id`: Unique event identifier
     - `createdOn`: Timestamp (ISO 8601)
     - `lastUpdated`: Last update timestamp
@@ -80,7 +79,7 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
     - `resourceId`: ID of the affected resource (when applicable)
     - `resourceName`: Human-readable name of the affected resource
     - `payload`: Additional event-specific details (see Payload Details below)
-8. **Categorize events** into human-readable groups (41 event types):
+7. **Categorize events** into human-readable groups (41 event types):
 
    **Page Changes:**
     - `page_dom_modified` — Page structure/element changes
@@ -143,13 +142,13 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
     - `library_update_accepted` — Library update accepted
 
    Note: If an event type not listed above appears, categorize it as "Other" and display the raw `event` string.
-9. **Apply filters** based on user's request:
+8. **Apply filters** based on user's request:
     - By event category (e.g., only CMS changes)
     - By user (match on `user.displayName`)
     - By time window (filter `createdOn` timestamps client-side)
     - By resource (match on `resourceName`)
     - **Pre-publish review**: When the user wants to see changes since the last publish, use the site's `lastPublished` timestamp (from Phase 1) and filter to events where `createdOn > lastPublished`. If `lastPublished` is null (never published), all events qualify as unpublished.
-10. **Generate insights** (include in the Highlights section of the report):
+9. **Generate insights** (include in the Highlights section of the report):
     - Most active user in the time period
     - Event type distribution (which category dominated)
     - Busiest day or hour
@@ -157,26 +156,20 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
     - Unpublished changes (count of events where `createdOn > lastPublished`)
 
 ### Phase 4: Reporting
-11. **Generate summary report**: Present findings in a clear, structured format:
-    - Time range covered
-    - Total event count
+10. **Generate summary report** with these sections:
+    - Time range covered and total event count
     - Breakdown by activity type
     - Breakdown by user
-    - Notable patterns or highlights
-12. **Answer the user's specific question**: If the user asked something specific, lead with the direct answer
-13. **Pick the detail level** from the prompt:
+    - **Highlights** — call out patterns such as high-frequency changes to a single page/collection, multiple users editing the same resource, unpublished changes (since last publish), and system events vs. user-initiated changes
+11. **Answer the user's specific question**: If the user asked something specific, lead with the direct answer before the structured report.
+12. **Pick the detail level** from the prompt:
     - "counts only" / "how many" / "just numbers" → **Quick summary** (counts by category only)
     - default → **Standard report** (categorized events with user attribution — see Example 1)
     - "walk me through" / "show every change" / "timeline" → **Detailed report** (chronological per-event view with payload)
     - "share" / "export" / "for my team" / "summary to send" → **Shareable/Export report** (see Example 3)
 
-    The detail-level switch is always surfaced as one of the follow-up options in step 15 so the user can request a different level.
-14. **Provide actionable context**: Highlight notable patterns such as:
-    - High-frequency changes to a single page or collection
-    - Multiple users editing the same resource
-    - Unpublished changes (changes since last publish)
-    - System events (backups) vs. user-initiated changes
-15. **Always end every report with a follow-up options section.** This is required, not optional. Use the exact format below, tailoring the numbered options to what's relevant for the query just answered:
+    The detail-level switch is always surfaced as one of the follow-up options in step 13 so the user can request a different level.
+13. **Always end every report with a follow-up options section.** This is required, not optional. Use the exact format below, tailoring the numbered options to what's relevant for the query just answered:
 
     ```
     ---
@@ -435,41 +428,6 @@ Would you like to:
 - If user asks "any publishes recently?" — 100 events is likely enough
 - If user asks "full month of activity" — explain the limitation and paginate up to 300 events maximum
 
-### Analysis Best Practices
-
-**Event Categorization:**
-- Group events into human-readable categories (see Phase 3, step 8)
-- Use plain language: "Page modifications" not "page_dom_modified"
-- Combine related events: variable_modified and variables_modified both count as "Variable changes"
-
-**Time Handling:**
-- Show dates in human-readable format
-- Group events by day for readability
-- Calculate and show the time span covered
-- Compare against the site's `lastPublished` to flag unpublished changes
-
-**User Attribution:**
-- Group activity by user when multiple users are active
-- Show user display names, not IDs
-- Highlight concentration of activity (one user doing 80%+ of changes)
-
-### Reporting Formats
-
-**Default — Structured Summary:**
-- Lead with overview stats
-- Break down by category and user
-- End with highlights and action items
-
-**Timeline View** (when user asks "what happened" or "walk me through"):
-- Chronological list grouped by day
-- Show timestamp, user, and event description per entry
-
-**Shareable Report** (when user asks for something to share):
-- Clean markdown format
-- Include header with site name and date range
-- Table format for team activity
-- Action items section
-
 ### Error Handling
 
 **Common errors:**
@@ -482,19 +440,3 @@ Would you like to:
 - If pagination fails mid-way, report what was successfully fetched
 - Always show partial results rather than nothing
 
-### Best Practices
-
-**Always:**
-- ✅ Verify enterprise access before querying
-- ✅ Show the time range covered by results
-- ✅ Translate event types to plain language
-- ✅ Group by meaningful categories
-- ✅ Flag unpublished changes
-- ✅ Offer follow-up options
-
-**Never:**
-- ❌ Assume results cover a specific time period without checking
-- ❌ Hide pagination limitations from the user
-- ❌ Show raw API event type names without translation
-- ❌ Make mutations — this is a read-only skill
-- ❌ Retry on permission errors (plan-level issue)
