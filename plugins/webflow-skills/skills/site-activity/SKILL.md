@@ -160,11 +160,19 @@ Query, analyze, and summarize Webflow site activity logs for enterprise sites. P
     - Multiple users editing the same resource
     - Unpublished changes (changes since last publish)
     - System events (backups) vs. user-initiated changes
-15. **Offer follow-up options**:
-    - Filter by specific user
-    - Filter by activity type
-    - Fetch older activity (pagination)
-    - Export as markdown or JSON
+15. **Always end every report with a follow-up options section.** This is required, not optional. Use the exact format below, tailoring the numbered options to what's relevant for the query just answered:
+
+    ```
+    ---
+
+    Would you like to:
+    1. Filter by a specific user
+    2. Filter by activity type
+    3. Fetch older activity (pagination)
+    4. Export as markdown or JSON
+    ```
+
+    If the report was a shareable/export format (e.g., "summary I can share"), place this block **outside** the shareable content so the user can copy the report cleanly without the follow-up menu in it.
 
 ## Event Payload Details
 
@@ -325,6 +333,14 @@ Show me CMS changes on site 6924868ede9d3fbbc3195eb0
 Summary: 18 CMS events by 2 users over 5 days
 - 5 items created, 11 items modified, 2 collection changes
 - ⚠️ 3 CMS changes are unpublished (after Apr 14 publish)
+
+---
+
+Would you like to:
+1. Filter to a specific collection
+2. Filter by user (Sarah or Alex)
+3. See only the unpublished CMS changes
+4. Fetch older CMS activity
 ```
 
 **User prompt:**
@@ -367,6 +383,12 @@ Give me a weekly summary I can share with my team
 ---
 Generated from Webflow Site Activity Log
 ```
+
+Would you like to:
+1. Filter to a specific user's changes
+2. Break down unpublished changes in detail
+3. Regenerate with a different date range
+4. Export as JSON instead of markdown
 
 
 ## Guidelines
