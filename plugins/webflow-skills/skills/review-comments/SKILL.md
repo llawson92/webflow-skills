@@ -57,11 +57,11 @@ Log: `Site: {displayName}` and `Found {N} open thread(s)`.
 
 ---
 
-## Step 3 — Fetch page element IDs (reparenting detection)
+## Step 3 — Build page-level element map
 
-For each unique `pageId` across threads, call `data_pages_tool > get_page_content` and collect all node IDs into a set. Page through results if needed. Store as a map of `pageId → Set<elementId>`.
+From the already-fetched thread list, build a frequency map of `elementId.element → Set<pageId>` across all threads. Any `elementId.element` that appears on **2 or more distinct pages** is almost certainly the page root/body element (a real element ID would be page-scoped; only shared structural roots repeat across pages).
 
-If the call fails for a page, store `null` for that pageId — do not abort.
+No API calls needed — this is a local computation on the thread data.
 
 ---
 
@@ -82,11 +82,7 @@ If found, note the most recent one (`lastAgentReply`). If no human reply exists 
 ### 4c — Compute element context
 
 - `elementId` = `thread.elementId?.element`
-- `pageElementIds` = the set fetched for this thread's `pageId` (or `null` if unavailable)
-- `foundInPageContent` = if `pageElementIds` is not null and `elementId` exists, check if `elementId` is in the set. If `pageElementIds` is null, default to `true`.
-- `lastInteractionTs` = last reply's `createdOn`, or `thread.createdOn` if no replies
-- `gapMs` = `new Date(thread.lastUpdated) - new Date(lastInteractionTs)`
-- `possiblyReparented` = `pageElementIds !== null && !foundInPageContent && gapMs > 60000`
+- `isPageLevel` = `elementId` appears on 2 or more distinct `pageId`s in the frequency map from Step 3
 
 ### 4d — Classify the thread
 
@@ -107,9 +103,9 @@ Use the following criteria:
 - Design decisions still required
 - Specific and concrete concerns
 
-**reparented** — Element deleted; comment moved to parent container:
-- Use this when `possiblyReparented` is true
-- The comment references a specific UI element that may no longer match its context
+**page-level** — Comment is on the page root, not a specific element:
+- Use this when `isPageLevel` is true
+- The comment is not anchored to any specific element — it may be intentional or may be an orphan from a deleted element
 
 ### 4e — Compose reply
 
@@ -118,7 +114,7 @@ Always compose the reply text (it appears in the report regardless of mode):
 - **noise**: one sentence confirming it's safe to resolve. E.g. `"Looks like test text — safe to resolve."`
 - **stale**: state the age in days, suggest resolving, invite reopen. E.g. `"This is 302 days old with no follow-up. Safe to resolve — reply here if it's still relevant."`
 - **open**: no reply text — surface in report only.
-- **reparented**: one sentence explaining the element was likely deleted. E.g. `"The original element was likely deleted — this comment moved to its parent container. Safe to resolve."`
+- **page-level**: one sentence noting it's not attached to a specific element. E.g. `"This comment is on the page root rather than a specific element — it may be an orphan from a deleted element. Safe to resolve if no longer relevant."`
 
 Append `\n\n— 🤖 Comment Review Agent` to every reply text.
 
@@ -133,7 +129,7 @@ Log each thread as:
                 ↳ {reply posted | no reply — report only | skipped}
 ```
 
-Verdict emojis: noise = 🗑, stale = 🕰, open = 🔴, reparented = 👻
+Verdict emojis: noise = 🗑, stale = 🕰, open = 🔴, page-level = 📄
 
 ---
 
@@ -151,7 +147,7 @@ Report format:
 
 **Run:** {human-readable date and time}
 **Mode:** {Report only | Report + replies posted}
-**Threads:** {total} total | 🔴 {open} open | 🕰 {stale} stale | 👻 {reparented} reparented | 🗑 {noise} noise | ⏭ {skipped} skipped
+**Threads:** {total} total | 🔴 {open} open | 🕰 {stale} stale | 📄 {page-level} page-level | 🗑 {noise} noise | ⏭ {skipped} skipped
 
 ---
 
@@ -167,7 +163,7 @@ Report format:
 |---------|--------|-----|-----------------|------|
 | "{first 80 chars of content}" | {author.name} | {age in days}d | {composed reply text, without the `— 🤖 Comment Review Agent` suffix} | [Open ↗]({thread.url}) |
 
-## 👻 Reparented ({count})
+## 📄 Page-level — Not Anchored to a Specific Element ({count})
 
 | Comment | Author | Age | Suggested Reply | Link |
 |---------|--------|-----|-----------------|------|
