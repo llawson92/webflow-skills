@@ -142,15 +142,31 @@ The project is deployed and connected. Confirm before suggesting anything.
 webflow auth login
 ```
 
-Environment variables read by the CLI:
+The token written to `.env` depends on the init mode. Site-attached and app modes use **different env var names** — do not mix them up in CI.
 
-| Variable | Required | Description |
-|---|---|---|
-| `WEBFLOW_SITE_API_TOKEN` | Yes (for deploy) | OAuth access token. Written to `.env` after `webflow auth login`. |
-| `WEBFLOW_SITE_ID` | Site-attached only | Written to `.env` during `cloud init`. Absent for apps. |
-| `DO_NOT_TRACK` | No | Set to `1` to opt out of telemetry. |
+**Site-attached init** writes:
 
-> **Note:** The CLI uses `WEBFLOW_SITE_API_TOKEN` (not `WEBFLOW_API_TOKEN`). Use `WEBFLOW_SITE_API_TOKEN` in GitHub Secrets. Never commit `.env` files.
+| Variable | Description |
+|---|---|
+| `WEBFLOW_SITE_API_TOKEN` | OAuth access token. Required for deploy. Set by `webflow auth login` in site-attached mode. |
+| `WEBFLOW_SITE_ID` | Set during `cloud init` (site-attached). |
+
+**App init (`--new`)** writes:
+
+| Variable | Description |
+|---|---|
+| `WEBFLOW_API_TOKEN` | Unified CLI access token. Required for deploy. Set by `webflow auth login` in app mode. **Not** the same env var as site-attached. |
+
+After the **first app deploy**, the CLI provisions a site on the backend and additionally writes `WEBFLOW_SITE_ID` to `.env` automatically. From that point on the project behaves like a site-attached project for subsequent deploys.
+
+Other env vars (any mode):
+
+| Variable | Description |
+|---|---|
+| `DO_NOT_TRACK` | Set to `1` to opt out of telemetry. |
+| `WEBFLOW_SKIP_UPDATE_CHECKS` | Set to `true` to skip the @webflow package update check. |
+
+> **GitHub Secrets:** mirror the env vars the CLI wrote to `.env` — `WEBFLOW_SITE_API_TOKEN` (+ `WEBFLOW_SITE_ID`) for site-attached and post-first-deploy app projects, `WEBFLOW_API_TOKEN` for app projects that have not yet been deployed once. Never commit `.env` files.
 
 ### Configuration — webflow.json
 
@@ -159,19 +175,34 @@ Environment variables read by the CLI:
   "siteId": "site_abc123",
   "cloud": {
     "project_id": "proj_xyz",
+    "environment_id": "env_xyz",
+    "workspace_id": "ws_xyz",
     "framework": "nextjs",
     "skipMountPathCheck": false
   }
 }
 ```
 
-- `project_id` is **snake_case** — not `projectId`. Auto-set after the first deploy.
-- `siteId` is absent for apps.
-- `cloud.framework` resolution at deploy time:
-  1. **`webflow.json` exists with `cloud.framework`** — used as-is. Invalid value exits with code 1.
-  2. **`webflow.json` exists but `cloud.framework` is absent** — throws: _"webflow.json exists but doesn't contain valid framework information under the 'cloud' key"_. Add `"cloud": { "framework": "nextjs" }` manually.
-  3. **No `webflow.json`** — auto-detected from `package.json`. CLI **writes a new `webflow.json`** on success.
-- Projects created via `cloud init` always land in case 1.
+All `cloud.*` keys are **snake_case** (`project_id`, not `projectId`).
+
+| Key | When set | Notes |
+|---|---|---|
+| `siteId` | Site-attached: at `cloud init`. App: after first deploy (CLI provisions a site). | Absent on app projects that have not been deployed yet. |
+| `cloud.framework` | At `cloud init`. | Required for deploy resolution — see below. |
+| `cloud.project_id` | After first deploy. | Auto-written. |
+| `cloud.environment_id` | After first **app** deploy. | Auto-written by `createCloudApp`. |
+| `cloud.workspace_id` | At app `cloud init` (`--new`). | Used by the first deploy to provision the site. |
+| `cloud.skipMountPathCheck` | User-managed. | Equivalent to `--skip-mount-path-check`. |
+
+The CLI also writes `cloud.deployment_type` (`"ssr" | "ssg" | "spa"`) and `cloud.entrypoint_path` into the **bundled** `webflow.json` at build time (these power the cosmic deployer's wrangler config). They're build-time outputs — do not strip them from the source `webflow.json` if you find them there; missing values silently break Next.js / Remix server-side deploys.
+
+**`cloud.framework` resolution at deploy time:**
+
+1. **`webflow.json` exists with `cloud.framework`** — used as-is. Invalid value exits with code 1.
+2. **`webflow.json` exists but `cloud.framework` is absent** — throws: _"webflow.json exists but doesn't contain valid framework information under the 'cloud' key"_. Add `"cloud": { "framework": "nextjs" }` manually.
+3. **No `webflow.json`** — auto-detected from `package.json`. CLI **writes a new `webflow.json`** on success.
+
+Projects created via `cloud init` always land in case 1.
 
 ### Commands
 
@@ -206,7 +237,7 @@ Flags:
 
 | Flag | Short | Description |
 |---|---|---|
-| `--project-name <name>` | `-n` | Project name. |
+| `--project-name <name>` | `-n` | Project name. **Must be 3–39 characters** — the CLI rejects anything outside this range at init and at the first app deploy. |
 | `--framework <framework>` | `-f` | Must match a scaffold ID from `cloud list`. Currently: `nextjs`, `astro`. |
 | `--mount <path>` | `-m` | Mount path (default `/app` for site-attached, `/` for app). Substituted into config files at scaffold time. Not stored in `webflow.json`. |
 | `--site-id <id>` | `-s` | Required in non-interactive site-attached mode. |
@@ -229,14 +260,26 @@ webflow cloud init --new --no-input --project-name my-app --framework nextjs
 
 | | Site-attached | App (`--new`) |
 |---|---|---|
-| OAuth / site selection | Required at init | Skipped |
-| `WEBFLOW_SITE_ID` in `.env` | Written | Not written |
+| OAuth / site selection | Required at init | Skipped (workspace selection instead) |
+| `WEBFLOW_SITE_ID` in `.env` | Written at init | Written **after first deploy** only |
 | `WEBFLOW_SITE_API_TOKEN` in `.env` | Written | Not written |
+| `WEBFLOW_API_TOKEN` in `.env` | Not written | Written |
+| `cloud.workspace_id` in `webflow.json` | Not set | Set at init (used by first deploy) |
 | Scaffold | `astro`, `nextjs` | `astro`, `nextjs` |
 | Mount path | Configurable (default `/app`) | Always `/` |
 | DevLink sync | Runs after init | Skipped |
 
+**Workspace selection (app mode only):** after OAuth, the CLI calls `GET /v2/workspaces` to enumerate workspaces the token has access to. If there are multiple, it prompts the user to pick one; a single workspace is selected automatically. The choice is persisted as `cloud.workspace_id` in `webflow.json`. There is no `--workspace` flag — workspace is purely interactive at init time. To target a different workspace, delete `cloud.workspace_id` (or the whole `webflow.json`) and re-run `cloud init --new`.
+
+#### webflow cloud create (deprecated)
+
+`webflow cloud create <name>` still works but **emits a deprecation warning** and will be removed in a future major release. It's hardcoded to `/app` mount in site-attached mode and offers a strict subset of `cloud init`. Always prefer `cloud init` (or `cloud init --new` for app mode).
+
 #### webflow cloud deploy
+
+**First app deploy provisions the Cloud app on the backend.** When `webflow.json` has no `siteId` but has `cloud.workspace_id` (the state left behind by `cloud init --new`), `cloud deploy` calls `POST /cosmic/workspaces/:workspace_id/cloudApps` to atomically create a site, project, and environment. On success it writes `siteId`, `cloud.project_id`, and `cloud.environment_id` back into `webflow.json` plus `WEBFLOW_SITE_ID` into `.env`, and forces `--skip-mount-path-check` for that one deploy. Subsequent deploys behave like a normal site-attached deploy.
+
+If `--project-name` is omitted on the first app deploy, the CLI uses the **cwd folder name** (when 3–39 chars) and falls back to `"Cloud App"`. Provide `--project-name` explicitly in CI to avoid surprises.
 
 There are two deployment approaches. **GitHub-linked deployment is recommended** — it requires no CI configuration and deploys automatically on every push to the connected branch.
 
@@ -292,6 +335,8 @@ All `cloud deploy` flags:
 
 Any other value in `cloud.framework` causes `cloud deploy` to exit with code 1.
 
+> **Scaffolds are fetched from GitHub at init time.** The CLI downloads scaffold tarballs from `Webflow-Examples/hello-world-{astro,nextjs}*` (pinned to the `v1` branch). `cloud init` therefore requires network access to `github.com`. Old CLI installs keep working because the registry pins a `vN` branch per scaffold-contract version.
+
 ### Global flags
 
 | Flag | Description |
@@ -342,6 +387,19 @@ git push -u origin main
 #    New Project → App → Import a GitHub repository → select repo + branch → Deploy
 #
 # From now on, every push to main triggers a deploy automatically.
+```
+
+### App workflow: interactive init → first deploy provisions site
+
+```bash
+# Interactive — prompts for workspace, framework, app name
+webflow cloud init --new
+
+# First deploy creates site + project + environment on the backend,
+# writes siteId / project_id / environment_id back to webflow.json,
+# and writes WEBFLOW_SITE_ID to .env. Subsequent deploys are normal.
+cd my-app
+webflow cloud deploy --no-input --mount / --environment main --skip-update-check
 ```
 
 ### Scaffold a site-attached Astro app locally
@@ -479,7 +537,21 @@ In CI, browser auth is not possible — an auth error means `WEBFLOW_SITE_API_TO
 
 ### Deploying to a different workspace
 
-Workspace context is **token-bound** — there is no `--workspace` flag. To deploy to a different workspace, re-run `webflow auth login` and select the target workspace in the browser. The new token will be written to `.env` and subsequent deploys will target that workspace.
+For **app projects (`--new`)**, workspace is fixed by `cloud.workspace_id` in `webflow.json` (chosen interactively at `cloud init`). To switch: delete `cloud.workspace_id` from `webflow.json` and re-run `webflow cloud init --new`. There is no `--workspace` flag.
+
+For **site-attached projects**, workspace context is implicit in the auth token. Re-run `webflow auth login` and select the target workspace in the browser; the new token replaces the old one in `.env`.
+
+### First app deploy fails with `missing_scopes`
+
+The token saved to `.env` doesn't include the scopes needed to create a Cloud app. Re-run `webflow auth login` and re-approve the scopes, then retry the deploy.
+
+### First app deploy fails: "your workspace has reached its app limit"
+
+The selected workspace (`cloud.workspace_id`) is at its app cap. Either upgrade the workspace plan or delete unused apps in the Webflow dashboard, then retry.
+
+### First app deploy fails with workspace-not-found / 404
+
+The `cloud.workspace_id` in `webflow.json` no longer resolves (workspace deleted, or token has no access). Delete `cloud.workspace_id` from `webflow.json` and re-run `webflow cloud init --new` to pick a workspace the current token can see.
 
 ### `ENVIRONMENT_MOUNT_MISMATCH`
 
