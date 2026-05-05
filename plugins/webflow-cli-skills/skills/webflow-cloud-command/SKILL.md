@@ -47,15 +47,43 @@ git remote get-url origin 2>/dev/null
 
 ---
 
+> **You are running without a TTY.** The CLI's interactive prompts only fire when `process.stdin.isTTY` is true. As an agent invoking the CLI through a subprocess, you do not have a TTY — every prompt is silently skipped, and any required value that wasn't passed as a flag triggers a hard error like `--project-name cannot be empty`.
+>
+> **Rule for every command in this skill:** pass all required flags explicitly. Never rely on prompts. Pass `--no-input` when the CLI accepts it to make this contract explicit. The required flag set per command:
+>
+> | Command | Always pass |
+> |---|---|
+> | `cloud init` (site-attached) | `--no-input --project-name <3–39 chars> --framework <astro\|nextjs> --mount <path> --site-id <id>` |
+> | `cloud init --new` (app) | `--no-input --project-name <3–39 chars> --framework <astro\|nextjs>` |
+> | `cloud deploy` | `--no-input --mount <path> --environment <env>` plus `--project-name` on first deploy |
+>
+> **One agent-fatal exception:** `cloud init --new` against a token that sees more than one workspace will **hang forever** — workspace selection is always interactive and has no `--workspace` flag and no non-TTY fallback. If you don't know whether the user's token is single- or multi-workspace, ask the user to run `cloud init --new` once locally; from there `cloud.workspace_id` is in `webflow.json` and you can take over.
+
+---
+
 ### Path A: No `project_id` — new project
 
 The project has not been deployed yet. Scaffold and deploy from scratch.
 
-1. **Scaffold the project:**
+1. **Scaffold the project** — pick the form that matches the user's intent:
+
    ```bash
-   webflow cloud init
+   # App (no site attachment) — single-workspace tokens only, see TTY note above
+   webflow cloud init --new --no-input \
+     --project-name my-app \
+     --framework astro
    ```
-   Use `--new` for a standalone app (no Webflow site), or connect to a site interactively. See [`cloud init`](#webflow-cloud-init) for all flags.
+
+   ```bash
+   # Site-attached (connect to an existing Webflow site) — agent must already know --site-id
+   webflow cloud init --no-input \
+     --project-name my-app \
+     --framework astro \
+     --mount /app \
+     --site-id site_abc123
+   ```
+
+   See [`cloud init`](#webflow-cloud-init) for all flags. If you don't have `--site-id` and the user wants site-attached, ask the user for the site ID before running anything.
 
 2. **Deploy:**
    ```bash
@@ -221,16 +249,16 @@ Bootstrap a new project locally. Two modes: **site-attached** and **app**.
 **Site-attached** (connects to an existing Webflow site):
 
 ```bash
-# Interactive (local dev)
-webflow cloud init
-
-# Non-interactive (local one-time setup only — NOT for CI)
+# Agent / non-TTY — always pass every flag
 webflow cloud init \
   --no-input \
   --project-name my-app \
   --framework nextjs \
   --mount /app \
   --site-id site_abc123
+
+# Human at a real terminal — interactive prompts will fill in any missing flag
+webflow cloud init
 ```
 
 Flags:
@@ -251,12 +279,14 @@ After scaffolding a site-attached project, the CLI automatically runs a **DevLin
 **App** (no site attachment):
 
 ```bash
-# Interactive
-webflow cloud init --new
-
-# Non-interactive (local only)
+# Agent / non-TTY — always pass every flag
 webflow cloud init --new --no-input --project-name my-app --framework nextjs
+
+# Human at a real terminal — prompts for workspace, framework, app name
+webflow cloud init --new
 ```
+
+> Even with `--no-input`, if the authenticated token sees **multiple workspaces** the CLI still tries to prompt for workspace selection (no `--workspace` flag exists), which hangs in non-TTY contexts. Ask the user to run `cloud init --new` once locally to seed `cloud.workspace_id` in `webflow.json`.
 
 | | Site-attached | App (`--new`) |
 |---|---|---|
@@ -269,7 +299,9 @@ webflow cloud init --new --no-input --project-name my-app --framework nextjs
 | Mount path | Configurable (default `/app`) | Always `/` |
 | DevLink sync | Runs after init | Skipped |
 
-**Workspace selection (app mode only):** after OAuth, the CLI calls `GET /v2/workspaces` to enumerate workspaces the token has access to. If there are multiple, it prompts the user to pick one; a single workspace is selected automatically. The choice is persisted as `cloud.workspace_id` in `webflow.json`. There is no `--workspace` flag — workspace is purely interactive at init time. To target a different workspace, delete `cloud.workspace_id` (or the whole `webflow.json`) and re-run `cloud init --new`.
+**Workspace selection (app mode only):** after OAuth, the CLI calls `GET /v2/workspaces` to enumerate workspaces the token has access to. If there are multiple, it prompts the user to pick one; a single workspace is selected automatically. The choice is persisted as `cloud.workspace_id` in `webflow.json`. There is no `--workspace` flag — workspace is purely interactive at init time, and `--no-input` does **not** suppress it.
+
+**Agent caveat:** if the user's token sees more than one workspace, the prompt fires unconditionally and hangs in non-TTY contexts. Mitigations, in order of preference: (a) ask the user to run `cloud init --new` once locally so `cloud.workspace_id` lands in `webflow.json`; (b) hand-write `webflow.json` with the workspace ID the user provides. To target a different workspace later, delete `cloud.workspace_id` and re-run init.
 
 #### webflow cloud create (deprecated)
 
@@ -389,17 +421,24 @@ git push -u origin main
 # From now on, every push to main triggers a deploy automatically.
 ```
 
-### App workflow: interactive init → first deploy provisions site
+### App workflow: init → first deploy provisions site
 
 ```bash
-# Interactive — prompts for workspace, framework, app name
-webflow cloud init --new
+# Agent-safe init — assumes the token sees a single workspace.
+# If the token sees multiple workspaces, ask the user to run this command locally first.
+webflow cloud init --new --no-input \
+  --project-name my-app \
+  --framework astro
 
 # First deploy creates site + project + environment on the backend,
 # writes siteId / project_id / environment_id back to webflow.json,
 # and writes WEBFLOW_SITE_ID to .env. Subsequent deploys are normal.
 cd my-app
-webflow cloud deploy --no-input --mount / --environment main --skip-update-check
+webflow cloud deploy --no-input \
+  --project-name my-app \
+  --mount / \
+  --environment main \
+  --skip-update-check
 ```
 
 ### Scaffold a site-attached Astro app locally
@@ -528,6 +567,26 @@ Commit all changes before deploying to production.
 - **100 MB build size limit** — builds exceeding 104,857,600 bytes fail at upload.
 
 ## Troubleshooting
+
+### `--project-name cannot be empty` (or any required-flag error) on `cloud init`
+
+The CLI gates its interactive prompts on `process.stdin.isTTY`. Agents invoke the CLI from a subprocess that does **not** have a TTY, so the prompt block is skipped entirely and the bare validation fires for the first missing required value.
+
+**Fix:** pass every required flag explicitly. For `cloud init`:
+
+```bash
+webflow cloud init --new --no-input --project-name my-app --framework astro
+# or, site-attached:
+webflow cloud init --no-input --project-name my-app --framework astro --mount /app --site-id site_abc123
+```
+
+Passing `--no-input` is not strictly required for the prompts to be skipped — the absent TTY already does that — but it makes the contract explicit and matches the Required-flag matrix at the top of this skill.
+
+### `cloud init --new` hangs forever / never returns
+
+Workspace selection in app mode prompts unconditionally when the token sees more than one workspace, with no `--workspace` flag and no non-TTY fallback. In a non-TTY context the CLI hangs at the prompt.
+
+**Fix:** ask the user to run `webflow cloud init --new` once locally to pick a workspace and seed `cloud.workspace_id` in `webflow.json`. After that, agents can run subsequent inits / deploys freely. Single-workspace tokens are not affected — selection is auto-skipped.
 
 ### Auth error on deploy
 
