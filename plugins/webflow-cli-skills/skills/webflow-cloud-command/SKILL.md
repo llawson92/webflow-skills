@@ -65,6 +65,15 @@ git remote get-url origin 2>/dev/null
 
 The project has not been deployed yet. Scaffold and deploy from scratch.
 
+**Before you run anything, ask the user which mode they want.** Picking wrong here is unrecoverable without manual cleanup — the deploy decision is locked into `webflow.json` at init time.
+
+| User says... | Mode | Outcome |
+|---|---|---|
+| "deploy to my Webflow site `<name>`", "site-attached", references an existing site | **Site-attached** | Project is bound to an existing Webflow site; site URL hosts the app at the chosen mount path. Requires `--site-id`. |
+| "standalone", "just an app", "no site", or no existing site mentioned | **App (`--new`)** | First deploy provisions a brand-new Webflow site (`<project-name>-<hash>.webflow.io`). |
+
+If the user is ambiguous, **ask** before scaffolding. Do not default.
+
 1. **Scaffold the project** — pick the form that matches the user's intent:
 
    ```bash
@@ -166,9 +175,11 @@ The project is deployed and connected. Confirm before suggesting anything.
 ### Authentication
 
 ```bash
-# Interactive login (local dev)
+# Interactive — local-only, opens a browser. NOT for agents or CI.
 webflow auth login
 ```
+
+> `webflow auth login` performs an OAuth flow in the user's browser and then writes the token to `.env`. It refuses to run with `--no-input` (exits with `No-input mode enabled. Aborting OAuth authentication`). **Agents cannot drive this command.** If `webflow auth login` is needed (missing or expired token), ask the user to run it locally once and report back when it's done.
 
 The token written to `.env` depends on the init mode. Site-attached and app modes use **different env var names** — do not mix them up in CI.
 
@@ -309,6 +320,16 @@ webflow cloud init --new
 
 #### webflow cloud deploy
 
+> **Before any deploy, read `webflow.json` and confirm the manifest matches user intent.** `cloud deploy` decides between site-attached and standalone-first-deploy purely from the manifest — no CLI flag overrides it. There is **no `--site-id` flag on `cloud deploy`** that would let you switch from one mode to the other at deploy time.
+>
+> | Manifest state | Deploy path taken |
+> |---|---|
+> | `siteId` present | Site-attached (deploy to existing site) |
+> | `siteId` absent **and** `cloud.workspace_id` present | **Standalone first deploy: provisions a brand-new Webflow site** via `POST /cosmic/workspaces/:id/cloudApps` |
+> | Both absent | Auth flow attempts to resolve a `siteId` (site-attached) |
+>
+> Failure mode the skill has hit in the wild: user wanted to deploy to an existing Webflow site (site-attached), but `webflow.json` was left in the standalone-init state (`cloud.workspace_id` set, no `siteId`). The deploy ran, the CLI provisioned a new site (`<name>-<hash>.webflow.io`), and the project was no longer connected to the user's intended Webflow site. **Always read `webflow.json` and verify before running deploy.** If the manifest doesn't match intent, fix the manifest first (see "Deploy provisioned a new site when I expected site-attached" in Troubleshooting).
+
 **First app deploy provisions the Cloud app on the backend.** When `webflow.json` has no `siteId` but has `cloud.workspace_id` (the state left behind by `cloud init --new`), `cloud deploy` calls `POST /cosmic/workspaces/:workspace_id/cloudApps` to atomically create a site, project, and environment. On success it writes `siteId`, `cloud.project_id`, and `cloud.environment_id` back into `webflow.json` plus `WEBFLOW_SITE_ID` into `.env`, and forces `--skip-mount-path-check` for that one deploy. Subsequent deploys behave like a normal site-attached deploy.
 
 If `--project-name` is omitted on the first app deploy, the CLI uses the **cwd folder name** (when 3–39 chars) and falls back to `"Cloud App"`. Provide `--project-name` explicitly in CI to avoid surprises.
@@ -347,10 +368,12 @@ All `cloud deploy` flags:
 
 | Flag | Short | Description |
 |---|---|---|
-| `--no-input` | — | CI mode. Disables all prompts. |
+| `--no-input` | — | CI mode. Disables most prompts but **not** the project-select prompt — see callout below. |
 | `--mount <path>` | `-m` | Mount path. **Always required with `--no-input`.** Not auto-read from `webflow.json`. |
 | `--environment <env>` | `-e` | Environment name. Creates if it does not exist. Must be passed with `--mount`. |
 | `--project-name <name>` | `-n` | Required on first deploy with `--no-input` when no `cloud.project_id` in `webflow.json`. |
+
+> **Agents: pass `--mount` AND `--environment` together, every time.** The deploy prompts (select existing project, name a new project, pick an environment) are gated on whether `--mount` and `--environment` are *both* set — not on `--no-input`. Pass `--no-input` without both and the project-select prompt still fires and hangs in non-TTY contexts. The minimum agent-safe deploy flag set is `--no-input --mount <path> --environment <env>`, plus `--project-name` whenever `cloud.project_id` is absent from `webflow.json`.
 | `--directory <path>` | `-d` | Project directory (default: cwd). Use for monorepos. |
 | `--description <text>` | — | Project description for the first deploy. |
 | `--skip-mount-path-check` | — | Skip domain manifest validation. Required in CI. Can also be set in `webflow.json` as `cloud.skipMountPathCheck: true`. |
@@ -587,6 +610,23 @@ Passing `--no-input` is not strictly required for the prompts to be skipped — 
 Workspace selection in app mode prompts unconditionally when the token sees more than one workspace, with no `--workspace` flag and no non-TTY fallback. In a non-TTY context the CLI hangs at the prompt.
 
 **Fix:** ask the user to run `webflow cloud init --new` once locally to pick a workspace and seed `cloud.workspace_id` in `webflow.json`. After that, agents can run subsequent inits / deploys freely. Single-workspace tokens are not affected — selection is auto-skipped.
+
+### Deploy provisioned a new site when I expected site-attached
+
+**Symptom:** user wanted to deploy to an existing Webflow site, but `cloud deploy` printed `Creating Cloud app...` / `Cloud app created: <name>` and the live URL came out as `<name>-<hash>.webflow.io` (a freshly minted site) instead of the user's intended site.
+
+**Cause:** `webflow.json` was in the standalone-init state — `cloud.workspace_id` set, `siteId` absent — typically because the project was previously scaffolded with `cloud init --new`. The deploy decision is read entirely from the manifest; `--mount /app`, `--site-id` (no such flag exists on deploy), and other flags do **not** redirect a standalone manifest into site-attached mode.
+
+**Recovery:** decide what to keep.
+
+- **Keep the new standalone site** the deploy just created — do nothing; subsequent deploys will go to the same site.
+- **Re-target an existing Webflow site instead.** This is the harder path. The standalone site that was just created cannot be re-bound to an existing site. Options:
+  1. Delete the standalone Cloud app (and its auto-provisioned site) from the Webflow dashboard.
+  2. Edit `webflow.json`: remove `cloud.workspace_id`, `cloud.project_id`, `cloud.environment_id`, and `siteId`.
+  3. Re-run `cloud init` (without `--new`) with `--site-id <existing-site-id>` to bind the project to the intended site.
+  4. Re-deploy.
+
+**Prevention:** at the very start of any new-project flow, ask the user whether they want site-attached or app mode (see Path A's mode table) before running `cloud init`. Always read `webflow.json` and confirm intent before running `cloud deploy` on a project the agent didn't scaffold itself.
 
 ### Auth error on deploy
 
