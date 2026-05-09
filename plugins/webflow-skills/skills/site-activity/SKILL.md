@@ -1,5 +1,5 @@
 ---
-name: site-activity
+name: webflow-mcp:site-activity
 description: Query and summarize site activity logs for a Webflow enterprise site. Surfaces recent changes, identifies who made them, and generates human-readable activity reports. Use for site monitoring, change tracking, publish preparation, or weekly activity summaries. Enterprise plans only.
 ---
 
@@ -445,4 +445,3 @@ Would you like to:
 - If site details fetch fails, still attempt activity logs
 - If pagination fails mid-way, report what was successfully fetched
 - Always show partial results rather than nothing
-

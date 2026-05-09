@@ -1,7 +1,7 @@
 {
   "name": "webflow-skills",
   "version": "1.0.2",
-  "description": "Production-ready skills for managing Webflow CMS content, auditing site health, optimizing assets, and safely publishing changes.",
+  "description": "Production-ready skills for managing Webflow CMS content, auditing site health, optimizing assets, building Designer pages and components, creating Code Components, running CLI workflows, and safely publishing changes.",
   "author": {
     "name": "Webflow",
     "email": "developers@webflow.com",
@@ -20,14 +20,23 @@
     "link-checker",
     "asset-optimization",
     "safe-publish",
+    "designer",
+    "designer-tools",
+    "components",
+    "code-components",
+    "cli",
+    "devlink",
+    "webflow-cloud",
+    "designer-extensions",
+    "page-structure",
     "flowkit"
   ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Webflow Skills",
-    "shortDescription": "Manage CMS, audits, assets, and publishing",
-    "longDescription": "Use Webflow Skills in Codex to manage CMS content, audit site health, optimize assets, check links, apply FlowKit naming, manage custom code, and prepare safe publishing workflows with Webflow MCP.",
+    "shortDescription": "Manage CMS, Designer, Code Components, and CLI workflows",
+    "longDescription": "Use Webflow Skills in Codex to manage CMS content, audit site health, optimize assets, check links, apply FlowKit naming, manage custom code, build and inspect Designer pages and components, create and deploy Code Components, run Webflow CLI workflows, and prepare safe publishing workflows with Webflow MCP.",
     "developerName": "Webflow",
     "category": "Productivity",
     "capabilities": [
@@ -41,7 +50,10 @@
     "defaultPrompt": [
       "Run a site audit for my Webflow site",
       "Find and fix broken links on my site",
-      "Prepare a safe publish checklist"
+      "Prepare a safe publish checklist",
+      "Inspect the current Designer page structure",
+      "Create a new Webflow Code Component",
+      "Deploy a Webflow Cloud app"
     ],
     "brandColor": "#146EF5",
     "composerIcon": "./assets/logo.svg",

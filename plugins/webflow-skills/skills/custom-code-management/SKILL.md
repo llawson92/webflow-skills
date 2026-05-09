@@ -1,5 +1,5 @@
 ---
-name: custom-code-management
+name: webflow-mcp:custom-code-management
 description: Add, review, or remove inline custom scripts on a Webflow site (up to 10,000 chars). Use for analytics, tracking pixels, chat widgets, or any custom JavaScript. Also manages page-level scripts.
 ---
 
