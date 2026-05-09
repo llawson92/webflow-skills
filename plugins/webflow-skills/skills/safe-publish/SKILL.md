@@ -1,5 +1,5 @@
 ---
-name: safe-publish
+name: webflow-mcp:safe-publish
 description: Publish a Webflow site with a plan-confirm-publish workflow. Shows what changed since last publish, runs pre-publish checks, and requires explicit confirmation before going live.
 ---
 
@@ -531,4 +531,3 @@ This is likely a configuration issue. Retrying...
 4. **Publish Already in Progress:**
    - Another publish may be running
    - Wait 30 seconds and try again
-

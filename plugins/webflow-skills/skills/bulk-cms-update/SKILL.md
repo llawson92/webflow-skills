@@ -1,5 +1,5 @@
 ---
-name: bulk-cms-update
+name: webflow-mcp:bulk-cms-update
 description: Create or update multiple CMS items in a Webflow collection with validation and diff preview. Use when adding multiple blog posts, products, or updating fields across many items.
 ---
 
@@ -669,4 +669,3 @@ Batch 3/3: ██████░░░░░░░░░░░░░░ 30% (15/
 - Provide actionable error messages
 - Estimate processing time
 - Allow cancellation mid-process
-

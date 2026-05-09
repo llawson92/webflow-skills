@@ -1,5 +1,5 @@
 ---
-name: designer-tools
+name: webflow-mcp:designer-tools
 description: Build and manage pages, elements, components, and styles in Webflow Designer. Use when adding sections, creating layouts, building elements, inspecting or updating components, viewing what's inside a component, restructuring pages, creating new pages, previewing page structure, styling elements, or managing component properties. Requires Webflow Designer connection.
 ---
 

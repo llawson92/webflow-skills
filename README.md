@@ -1,6 +1,6 @@
 # Webflow Skills
 
-A collection of [Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) for working with Webflow sites through the Webflow MCP server. Manage CMS content, audit site health, optimize assets, and safely publish changes.
+A collection of [Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) for working with Webflow sites through the Webflow MCP server. Manage CMS content, audit site health, optimize assets, build in Webflow Designer, create Code Components, run Webflow CLI workflows, and safely publish changes.
 
 ## Installing
 
@@ -43,15 +43,16 @@ Clone this repo and copy the skill folders into the appropriate directory for yo
 
 ## Prerequisites
 
-**Webflow MCP Server Required**
+**Webflow MCP Server and CLI Tooling**
 
-These skills require the [Webflow MCP server](https://developers.webflow.com/mcp) to be installed and configured. Without it, skills cannot access your Webflow sites.
+Site, CMS, audit, Designer, and publishing skills require the [Webflow MCP server](https://developers.webflow.com/mcp) to be installed and configured. CLI and Code Component workflows also require Node.js and the Webflow CLI.
 
 ### What You Need
 
 1. **Webflow Account** - Active Webflow account with sites
 2. **Webflow MCP Server** - Installed and configured in your MCP environment
-3. **Compatible Agent** - Any agent with MCP and skills support enabled
+3. **Node.js and Webflow CLI** - Required for Webflow CLI and Code Component workflows
+4. **Compatible Agent** - Any agent with MCP and skills support enabled
 
 ### Quick Setup
 
@@ -61,22 +62,27 @@ These skills require the [Webflow MCP server](https://developers.webflow.com/mcp
 
 For detailed setup instructions, visit the [Webflow MCP Documentation](https://developers.webflow.com/mcp).
 
-## Webflow MCP Skills
+## Skills
+
+All skills ship from the single `webflow-skills` plugin.
+
+### Webflow MCP Skills
 
 | Skill | Description |
 |-------|-------------|
-| bulk-cms-update | Batch create/update CMS items with validation and preview |
-| cms-collection-setup | Create collections with custom fields and relationships (16 field types) |
-| cms-best-practices | Expert guidance on CMS architecture and optimization |
-| site-audit | Comprehensive health check with scoring (0-100) and recommendations |
-| asset-audit | Identify optimization opportunities for images and files |
-| link-checker | Scan and fix broken/insecure links across pages and CMS content |
-| accessibility-audit | WCAG 2.1 compliance check with detailed reports and fixes |
-| safe-publish | Preview, confirm, publish workflow with verification |
-| custom-code-management | Manage tracking scripts and custom code safely |
-| flowkit-naming | Apply Webflow's official FlowKit CSS naming conventions |
+| webflow-mcp:bulk-cms-update | Batch create/update CMS items with validation and preview |
+| webflow-mcp:cms-collection-setup | Create collections with custom fields and relationships (16 field types) |
+| webflow-mcp:cms-best-practices | Expert guidance on CMS architecture and optimization |
+| webflow-mcp:site-audit | Comprehensive health check with scoring (0-100) and recommendations |
+| webflow-mcp:asset-audit | Identify optimization opportunities for images and files |
+| webflow-mcp:link-checker | Scan and fix broken/insecure links across pages and CMS content |
+| webflow-mcp:accessibility-audit | WCAG 2.1 compliance check with detailed reports and fixes |
+| webflow-mcp:safe-publish | Preview, confirm, publish workflow with verification |
+| webflow-mcp:custom-code-management | Manage tracking scripts and custom code safely |
+| webflow-mcp:flowkit-naming | Apply Webflow's official FlowKit CSS naming conventions |
+| webflow-mcp:designer-tools | Build and manage page structure, elements, components, and styles in Webflow Designer |
 
-## Webflow CLI Skills
+### Webflow CLI Skills
 
 | Skill | Description |
 |-------|-------------|
@@ -86,7 +92,7 @@ For detailed setup instructions, visit the [Webflow MCP Documentation](https://d
 | webflow-cli:code-component | Create and deploy reusable React components for Webflow Designer |
 | webflow-cli:troubleshooter | Diagnose and fix Webflow CLI issues including installation, auth, build, and bundle problems |
 
-## Webflow Code Component Skills
+### Webflow Code Component Skills
 
 | Skill | Description |
 |-------|-------------|
