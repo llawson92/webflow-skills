@@ -1,7 +1,7 @@
 {
   "name": "webflow",
   "version": "1.0.0",
-  "description": "Use Webflow MCP and agent skills to manage CMS content, audit sites, publish safely, work in Designer, and run Webflow CLI workflows.",
+  "description": "Build, manage, audit, and publish Webflow sites from Codex with Webflow MCP, Designer tools, CMS workflows, and CLI guidance.",
   "author": {
     "name": "Webflow",
     "email": "developers@webflow.com",
