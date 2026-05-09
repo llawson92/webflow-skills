@@ -38,9 +38,9 @@
     "privacyPolicyURL": "https://webflow.com/legal/privacy",
     "termsOfServiceURL": "https://webflow.com/legal/terms",
     "defaultPrompt": [
-      "Audit my Webflow site",
-      "Update Webflow CMS items",
-      "Prepare a safe publish checklist"
+      "Show me all elements on the homepage",
+      "Run an accessibility audit on my homepage",
+      "I have some broken links on my About page. Can you fix them?"
     ],
     "brandColor": "#146EF5",
     "composerIcon": "./assets/logo.svg",
