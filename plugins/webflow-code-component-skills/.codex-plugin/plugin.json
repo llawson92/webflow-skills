@@ -1,0 +1,48 @@
+{
+  "name": "webflow-code-component-skills",
+  "version": "1.0.0",
+  "description": "Skills for building and deploying Webflow Code Components with scaffolding, styling, validation, and deployment workflows.",
+  "author": {
+    "name": "Webflow",
+    "email": "developers@webflow.com",
+    "url": "https://developers.webflow.com"
+  },
+  "homepage": "https://github.com/webflow/webflow-skills#readme",
+  "repository": "https://github.com/webflow/webflow-skills",
+  "license": "MIT",
+  "keywords": [
+    "webflow",
+    "code-components",
+    "react",
+    "components",
+    "validation",
+    "deployment",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Webflow Code Components",
+    "shortDescription": "Build and deploy Webflow Code Components",
+    "longDescription": "Use Webflow Code Components in Codex to scaffold, convert, audit, validate, troubleshoot, and deploy React-based Webflow Code Components with practical pre-deploy workflows.",
+    "developerName": "Webflow",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://webflow.com",
+    "privacyPolicyURL": "https://webflow.com/legal/privacy",
+    "termsOfServiceURL": "https://webflow.com/legal/terms",
+    "defaultPrompt": [
+      "Scaffold a Webflow Code Component",
+      "Audit this component before deployment",
+      "Help me deploy a Code Component"
+    ],
+    "brandColor": "#146EF5",
+    "composerIcon": "./assets/logo.svg",
+    "logo": "./assets/logo.svg",
+    "screenshots": []
+  }
+}

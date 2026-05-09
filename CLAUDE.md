@@ -4,16 +4,21 @@ Webflow Skills is a marketplace-ready collection of agent skills for Claude Code
 
 ## Repository Structure
 
-Three plugin families live under `plugins/`:
+Four plugin families live under `plugins/`:
 
-- **webflow-skills/** — CMS operations, site/asset/link audits, safe publish, FlowKit naming (10 skills)
+- **webflow-skills/** — CMS operations, site/asset/link audits, safe publish, FlowKit naming (11 skills)
 - **webflow-code-component-skills/** — React code component scaffolding, conversion, validation, deployment (7 skills)
 - **webflow-cli-skills/** — CLI wrappers for Cloud, DevLink, designer extensions (5 skills)
+- **webflow-designer-tools/** — Webflow Designer page structure, elements, and components (1 skill)
 
 Key config files:
 
 - `.mcp.json` — MCP server config (Webflow MCP at https://mcp.webflow.com/mcp)
-- `.claude-plugin/marketplace.json` — Marketplace entry listing all 3 plugins
+- `.claude-plugin/marketplace.json` — Claude marketplace entry listing all 4 plugins
+- `.agents/plugins/marketplace.json` — Codex marketplace entry listing all 4 plugins
+- `plugins/*/.codex-plugin/plugin.json` — Codex plugin manifests, one per plugin family
+- `plugins/*/.mcp.json` — Symlinks to the root `.mcp.json` for Codex plugin MCP config
+- `plugins/*/assets/logo.svg` — Symlinks to the root `assets/logo.svg` for Codex plugin branding
 - `.cursor-plugin/plugin.json` + `marketplace.json` — Cursor plugin config
 - `agents/webflow-agent.md` — Agent setup documentation
 
