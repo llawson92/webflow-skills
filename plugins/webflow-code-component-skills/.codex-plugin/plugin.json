@@ -1,7 +1,7 @@
 {
-  "name": "webflow",
+  "name": "webflow-code-component-skills",
   "version": "1.0.0",
-  "description": "Build, manage, audit, and publish Webflow sites from Codex with Webflow MCP, Designer tools, CMS workflows, and CLI guidance.",
+  "description": "Skills for building and deploying Webflow Code Components with scaffolding, styling, validation, and deployment workflows.",
   "author": {
     "name": "Webflow",
     "email": "developers@webflow.com",
@@ -12,21 +12,19 @@
   "license": "MIT",
   "keywords": [
     "webflow",
-    "mcp",
-    "cms",
-    "designer",
-    "site-audit",
-    "seo",
-    "accessibility",
     "code-components",
-    "webflow-cli"
+    "react",
+    "components",
+    "validation",
+    "deployment",
+    "mcp"
   ],
   "skills": "./skills/",
-  "mcpServers": "./.codex-mcp.json",
+  "mcpServers": "./.mcp.json",
   "interface": {
-    "displayName": "Webflow",
-    "shortDescription": "Build, audit, and publish Webflow sites from Codex",
-    "longDescription": "Connect Codex to Webflow MCP for Designer, CMS, site audit, publishing, CLI, and Code Components workflows. Inspect pages, update content, validate site health, and prepare changes with clear review steps.",
+    "displayName": "Webflow Code Components",
+    "shortDescription": "Build and deploy Webflow Code Components",
+    "longDescription": "Use Webflow Code Components in Codex to scaffold, convert, audit, validate, troubleshoot, and deploy React-based Webflow Code Components with practical pre-deploy workflows.",
     "developerName": "Webflow",
     "category": "Productivity",
     "capabilities": [
@@ -38,9 +36,9 @@
     "privacyPolicyURL": "https://webflow.com/legal/privacy",
     "termsOfServiceURL": "https://webflow.com/legal/terms",
     "defaultPrompt": [
-      "Show me all elements on the homepage",
-      "Run an accessibility audit on my homepage",
-      "I have some broken links on my About page. Can you fix them?"
+      "Scaffold a Webflow Code Component",
+      "Audit this component before deployment",
+      "Help me deploy a Code Component"
     ],
     "brandColor": "#146EF5",
     "composerIcon": "./assets/logo.svg",

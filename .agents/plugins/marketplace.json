@@ -5,10 +5,46 @@
   },
   "plugins": [
     {
-      "name": "webflow",
+      "name": "webflow-skills",
       "source": {
         "source": "local",
-        "path": "./"
+        "path": "./plugins/webflow-skills"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "webflow-code-component-skills",
+      "source": {
+        "source": "local",
+        "path": "./plugins/webflow-code-component-skills"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "webflow-cli-skills",
+      "source": {
+        "source": "local",
+        "path": "./plugins/webflow-cli-skills"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "webflow-designer-tools",
+      "source": {
+        "source": "local",
+        "path": "./plugins/webflow-designer-tools"
       },
       "policy": {
         "installation": "AVAILABLE",
