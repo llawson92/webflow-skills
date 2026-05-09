@@ -1,6 +1,6 @@
 {
   "name": "webflow-skills",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Production-ready skills for managing Webflow CMS content, auditing site health, optimizing assets, building Designer pages and components, creating Code Components, running CLI workflows, and safely publishing changes.",
   "author": {
     "name": "Webflow",
@@ -39,11 +39,7 @@
     "longDescription": "Use Webflow Skills in Codex to manage CMS content, audit site health, optimize assets, check links, apply FlowKit naming, manage custom code, build and inspect Designer pages and components, create and deploy Code Components, run Webflow CLI workflows, and prepare safe publishing workflows with Webflow MCP.",
     "developerName": "Webflow",
     "category": "Productivity",
-    "capabilities": [
-      "Interactive",
-      "Read",
-      "Write"
-    ],
+    "capabilities": ["Interactive", "Read", "Write"],
     "websiteURL": "https://webflow.com",
     "privacyPolicyURL": "https://webflow.com/legal/privacy",
     "termsOfServiceURL": "https://webflow.com/legal/terms",
