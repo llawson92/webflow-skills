@@ -1,5 +1,5 @@
 ---
-name: site-audit
+name: webflow-mcp:site-audit
 description: Comprehensive audit of a Webflow site including pages, CMS collections, health scoring, and actionable insights. Use for site analysis, migration planning, or understanding site structure.
 ---
 
@@ -382,4 +382,3 @@ If user runs inventory multiple times:
 - Show changes (new pages, deleted collections)
 - Track content growth over time
 - Alert on significant changes
-

@@ -1,5 +1,5 @@
 ---
-name: cms-best-practices
+name: webflow-mcp:cms-best-practices
 description: Expert guidance on Webflow CMS architecture and best practices. Use when planning collections, setting up relationships, optimizing content structure, or troubleshooting CMS issues.
 ---
 

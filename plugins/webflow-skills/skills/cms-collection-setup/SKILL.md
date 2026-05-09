@@ -1,5 +1,5 @@
 ---
-name: cms-collection-setup
+name: webflow-mcp:cms-collection-setup
 description: Create a new CMS collection in Webflow with specified fields and relationships. Use when setting up blog posts, products, team members, portfolios, or other content types with custom fields.
 ---
 

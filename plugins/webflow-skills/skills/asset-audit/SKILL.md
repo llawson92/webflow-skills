@@ -1,5 +1,5 @@
 ---
-name: asset-audit
+name: webflow-mcp:asset-audit
 description: Analyze assets on a Webflow site for SEO optimization. Identifies assets missing alt text and assets with non-SEO-friendly names, then generates and applies improvements.
 ---
 
@@ -402,4 +402,3 @@ Before any update, store in memory:
 - Use visual indicators: ✅ ⚠️ ❌ 🔍 💡 📋 🎉
 - Be conversational but concise
 - Always offer rollback after changes
-

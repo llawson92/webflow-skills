@@ -1,5 +1,5 @@
 ---
-name: link-checker
+name: webflow-mcp:link-checker
 description: Find and fix broken or insecure links across an entire site, including CMS content, to improve SEO and user experience. Audits HTTP/HTTPS issues and validates all internal and external links.
 ---
 
