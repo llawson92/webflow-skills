@@ -1,5 +1,5 @@
 ---
-name: review-comments
+name: webflow-mcp:review-comments
 description: Review open comment threads on a Webflow site and triage each one.
 ---
 Review open comment threads on a Webflow site and triage each one.
@@ -33,7 +33,7 @@ Parse `$ARGUMENTS` at the start: strip `-reply` from the input to get the site i
 | [Site Name](https://webflow.com/design/{siteId}) ({siteId}) | {N} | {newestDate} / {oldestDate} |
 ```
 
-7. After the table, tell the user: "Run `/review-comments <site name or ID>` to review a specific site."
+7. After the table, tell the user: "Run `/webflow-mcp:review-comments <site name or ID>` to review a specific site."
 8. Write the survey output to a file:
    - Ensure `comment-reviews/` exists (create with `mkdir comment-reviews` if not).
    - Filename: `comment-reviews/triage-report-{YYYY-MM-DD-HH-MM}.md` using the current local time (zero-padded).
