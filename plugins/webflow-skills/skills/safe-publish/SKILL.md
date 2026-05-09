@@ -1,5 +1,5 @@
 ---
-name: safe-publish
+name: webflow-mcp:safe-publish
 description: Publish a Webflow site with a plan-confirm-publish workflow. Shows what changed since last publish, runs pre-publish checks, and requires explicit confirmation before going live.
 ---
 
@@ -42,7 +42,7 @@ Publish a Webflow site with comprehensive preview, validation, and explicit conf
    - Categorize by type (static, CMS template, archived, draft)
 6. **List all collections**: Use Webflow MCP's `data_cms_tool` with action `get_collection_list`
 7. **Check for draft items**:
-   - For each collection, use Webflow MCP's `collections_items_list_items`
+   - For each collection, use Webflow MCP's `data_cms_tool` with action `list_collection_items`
    - Count items where `isDraft: true`
    - Count items modified since last publish
 8. **Detect issues**:
@@ -267,7 +267,7 @@ All unpublished changes have been successfully published to the Webflow subdomai
 ### Phase 1: Critical Requirements
 
 **Site Status Check:**
-- Always fetch complete site details using `sites_get`
+- Always fetch complete site details using `data_sites_tool` with action `get_site`
 - Compare `lastUpdated` vs `lastPublished` to detect unpublished changes
 - If timestamps are identical, inform user "No changes to publish"
 - If `lastPublished` is null, warn "First publish - entire site will go live"
@@ -297,8 +297,8 @@ All unpublished changes have been successfully published to the Webflow subdomai
   - Archived (won't appear on site)
 
 **Collections to Check:**
-- Query all collections with `collections_list`
-- For each collection, list items with `collections_items_list_items`
+- Query all collections with `data_cms_tool` with action `get_collection_list`
+- For each collection, list items with `data_cms_tool` with action `list_collection_items`
 - Batch queries if site has many collections (10+ collections)
 
 ### Phase 3: Pre-Publish Validation
@@ -343,7 +343,7 @@ All unpublished changes have been successfully published to the Webflow subdomai
 
 **Publish API Usage:**
 ```javascript
-// Correct format for sites_publish
+// Correct format for data_sites_tool with action publish_site
 {
   "site_id": "site-id-here",
   "publishToWebflowSubdomain": true,  // or false
@@ -376,7 +376,7 @@ All unpublished changes have been successfully published to the Webflow subdomai
 
 **Post-Publish Verification:**
 1. **Fetch Updated Site Info:**
-   - Call `sites_get` again
+   - Call `data_sites_tool` with action `get_site` again
    - Verify `lastPublished` timestamp updated
    - If timestamp didn't update, publish may have failed
 
@@ -531,4 +531,3 @@ This is likely a configuration issue. Retrying...
 4. **Publish Already in Progress:**
    - Another publish may be running
    - Wait 30 seconds and try again
-

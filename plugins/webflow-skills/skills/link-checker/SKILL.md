@@ -1,5 +1,5 @@
 ---
-name: link-checker
+name: webflow-mcp:link-checker
 description: Find and fix broken or insecure links across an entire site, including CMS content, to improve SEO and user experience. Audits HTTP/HTTPS issues and validates all internal and external links.
 ---
 
@@ -100,7 +100,7 @@ Audit and fix broken or insecure links across your Webflow site to improve SEO a
     - Flag manual review items separately
 
 ### Phase 5: Execution & Confirmation
-15. **Apply fixes to static pages**: Use Webflow MCP's `pages_update_static_content`
+15. **Apply fixes to static pages**: Use Webflow MCP's `data_pages_tool` with action `update_static_content`
     - Requires Designer connection
     - Update link URLs in nodes
     - Process in batches of 20 links
@@ -530,7 +530,7 @@ Note: Item [1] requires manual correction with correct URL
 ### Phase 1: Discovery Best Practices
 
 **Site Selection:**
-- Use `sites_list` to get available sites
+- Use `data_sites_tool` with action `list_sites` to get available sites
 - Never assume site ID
 - Confirm site name with user
 
@@ -549,7 +549,7 @@ Note: Item [1] requires manual correction with correct URL
 ### Phase 2: Link Extraction Best Practices
 
 **Static Page Link Extraction:**
-- Use `pages_get_content` to get page nodes
+- Use `data_pages_tool` with action `get_page_content` to get page nodes
 - Look for these node types:
   - Link (a tag)
   - Button (with link)
@@ -560,8 +560,8 @@ Note: Item [1] requires manual correction with correct URL
 - Track nodeId for fixing later
 
 **CMS Link Extraction:**
-- Use `collections_get` to identify Link and Rich Text fields
-- Use `collections_items_list_items` to get all items
+- Use `data_cms_tool` with action `get_collection_details` to identify Link and Rich Text fields
+- Use `data_cms_tool` with action `list_collection_items` to get all items
 - For Link fields: Extract URL directly
 - For Rich Text fields: Parse HTML to extract <a> tags
 - Track: collectionId, itemId, fieldName for fixing
@@ -716,7 +716,7 @@ Needs manual review:
 ```
 Requirements:
 - Designer connection required
-- Use pages_update_static_content
+- Use data_pages_tool with action update_static_content
 - Update nodes array with new URLs
 - Process in batches of 20 links per page
 - Verify updates after each batch
@@ -731,7 +731,7 @@ Error Handling:
 ```
 For Link Fields:
 - Direct update: fieldData[fieldName] = "new-url"
-- Use collections_items_update_items
+- Use data_cms_tool with action update_collection_items
 - Option: update live or draft
 
 For Rich Text Fields:
@@ -750,7 +750,7 @@ Batch Processing:
 ```
 Ask user:
 "Would you like to publish the changes immediately?"
-- Yes: Use collections_items_publish_items
+- Yes: Use data_cms_tool with action publish_collection_items
 - No: Leave as drafts
 
 For static pages:
@@ -1117,7 +1117,7 @@ Before considering link checker implementation complete:
 - [ ] Timeout errors handled
 - [ ] Rate limits handled
 - [ ] SSL errors handled
-- [ [ ] Partial failures reported separately
+- [ ] Partial failures reported separately
 
 ### ✅ Performance
 - [ ] Batch processing for scale

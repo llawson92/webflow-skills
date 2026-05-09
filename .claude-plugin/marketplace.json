@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "webflow-skills",
-  "description": "Production-ready agent skills for Webflow - CMS management, site auditing, asset optimization, and safe publishing",
+  "description": "Production-ready agent skills for Webflow - CMS management, site auditing, Designer tools, Code Components, CLI workflows, and safe publishing",
   "owner": {
     "name": "Webflow",
     "email": "developers@webflow.com"
@@ -9,29 +9,11 @@
   "plugins": [
     {
       "name": "webflow-skills",
-      "description": "Manage Webflow CMS content, audit site health, optimize assets, and safely publish changes with built-in validation workflows",
+      "description": "Manage Webflow CMS content, audit site health, optimize assets, build Designer pages and components, create Code Components, run CLI workflows, and safely publish changes with built-in validation workflows",
       "author": {
         "name": "Webflow"
       },
       "source": "./plugins/webflow-skills",
-      "category": "productivity"
-    },
-    {
-      "name": "webflow-code-component-skills",
-      "description": "Build and deploy Webflow Code Components with built-in validation workflows",
-      "author": {
-        "name": "Webflow"
-      },
-      "source": "./plugins/webflow-code-component-skills",
-      "category": "productivity"
-    },
-    {
-      "name": "webflow-cli-skills",
-      "description": "Run Webflow CLI commands for Code Components, DevLink, Cloud deployments, and Designer Extensions with validation workflows",
-      "author": {
-        "name": "Webflow"
-      },
-      "source": "./plugins/webflow-cli-skills",
       "category": "productivity"
     }
   ]

@@ -1,5 +1,5 @@
 ---
-name: site-audit
+name: webflow-mcp:site-audit
 description: Comprehensive audit of a Webflow site including pages, CMS collections, health scoring, and actionable insights. Use for site analysis, migration planning, or understanding site structure.
 ---
 
@@ -53,8 +53,8 @@ Comprehensive audit of a Webflow site's structure, content health, and quality w
 ### Phase 3: CMS Collections Inventory
 7. **List all collections**: Use Webflow MCP's `data_cms_tool` with action `get_collection_list`
 8. **For each collection**:
-   - Get detailed schema using Webflow MCP's `collections_get`
-   - Count items using Webflow MCP's `collections_items_list_items`
+   - Get detailed schema using Webflow MCP's `data_cms_tool` with action `get_collection_details`
+   - Count items using Webflow MCP's `data_cms_tool` with action `list_collection_items`
    - Analyze field types and requirements
    - Identify required vs optional fields
    - Detect reference fields and relationships
@@ -217,7 +217,7 @@ Which format would you like? (1/2/3)
 ### Phase 1: Critical Requirements
 
 **Site Information:**
-- Always fetch complete site details using `sites_get`
+- Always fetch complete site details using `data_sites_tool` with action `get_site`
 - Include last published and last updated dates
 - Show timezone and locale information
 - Display custom domains if configured
@@ -346,8 +346,8 @@ Generate separate files:
 - Provide estimated time for large sites
 
 **Error Handling:**
-- If `pages_list` fails, continue with collections
-- If `collections_get` fails, show basic collection info
+- If `data_pages_tool` with action `list_pages` fails, continue with collections
+- If `data_cms_tool` with action `get_collection_details` fails, show basic collection info
 - Report partial successes separately
 - Offer to retry failed operations
 
@@ -382,4 +382,3 @@ If user runs inventory multiple times:
 - Show changes (new pages, deleted collections)
 - Track content growth over time
 - Alert on significant changes
-

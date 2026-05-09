@@ -1,19 +1,21 @@
 ## Project Overview
 
-Webflow Skills is a marketplace-ready collection of agent skills for Claude Code, Cursor, and compatible agents. Skills extend agents with specialized Webflow capabilities: CMS management, site auditing, safe publishing, code components, and CLI integration. **This is a pure documentation project** — no compiled code, just SKILL.md files that guide agent behavior.
+Webflow Skills is a marketplace-ready collection of agent skills for Claude Code, Cursor, and compatible agents. Skills extend agents with specialized Webflow capabilities: CMS management, site auditing, safe publishing, Designer tools, code components, and CLI integration. **This is a pure documentation project** — no compiled code, just SKILL.md files that guide agent behavior.
 
 ## Repository Structure
 
-Three plugin families live under `plugins/`:
+One plugin family lives under `plugins/`:
 
-- **webflow-skills/** — CMS operations, site/asset/link audits, safe publish, FlowKit naming (10 skills)
-- **webflow-code-component-skills/** — React code component scaffolding, conversion, validation, deployment (7 skills)
-- **webflow-cli-skills/** — CLI wrappers for Cloud, DevLink, designer extensions (5 skills)
+- **webflow-skills/** — CMS operations, site/asset/link audits, Designer page/component tools, safe publish, FlowKit naming, React code component workflows, and CLI wrappers for Cloud, DevLink, and designer extensions (24 skills)
 
 Key config files:
 
 - `.mcp.json` — MCP server config (Webflow MCP at https://mcp.webflow.com/mcp)
-- `.claude-plugin/marketplace.json` — Marketplace entry listing all 3 plugins
+- `.claude-plugin/marketplace.json` — Claude marketplace entry listing the Webflow Skills plugin
+- `.agents/plugins/marketplace.json` — Codex marketplace entry listing the Webflow Skills plugin
+- `plugins/webflow-skills/.codex-plugin/plugin.json` — Codex plugin manifest
+- `plugins/webflow-skills/.mcp.json` — Symlink to the root `.mcp.json` for Codex plugin MCP config
+- `plugins/webflow-skills/assets/logo.svg` — Symlink to the root `assets/logo.svg` for Codex plugin branding
 - `.cursor-plugin/plugin.json` + `marketplace.json` — Cursor plugin config
 - `agents/webflow-agent.md` — Agent setup documentation
 
@@ -35,14 +37,14 @@ There is no build step, test suite, or linter config — validation is purely st
 Each skill is a single `SKILL.md` file in its own directory:
 
 ```
-plugins/<plugin-name>/skills/<skill-name>/SKILL.md
+plugins/webflow-skills/skills/<skill-name>/SKILL.md
 ```
 
 Required YAML frontmatter:
 
 ```yaml
 ---
-name: skill-name # 1-64 chars, lowercase alphanumeric + hyphens
+name: namespace:skill-name # e.g. webflow-mcp:site-audit
 description: ... # Up to 1024 chars, include trigger keywords
 ---
 ```

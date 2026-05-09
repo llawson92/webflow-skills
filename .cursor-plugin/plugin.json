@@ -1,7 +1,7 @@
 {
   "name": "webflow",
-  "version": "1.0.0",
-  "description": "Production-ready agent skills for Webflow - CMS management, site auditing, asset optimization, and safe publishing",
+  "version": "1.0.3",
+  "description": "Production-ready agent skills for Webflow - CMS management, site auditing, Designer tools, Code Components, CLI workflows, and safe publishing",
   "author": {
     "name": "Webflow",
     "email": "developers@webflow.com",
@@ -18,13 +18,18 @@
     "accessibility",
     "link-checker",
     "asset-optimization",
+    "designer",
+    "designer-tools",
+    "components",
+    "code-components",
+    "cli",
+    "devlink",
+    "webflow-cloud",
+    "designer-extensions",
+    "page-structure",
     "flowkit"
   ],
   "logo": "assets/logo.svg",
-  "skills": [
-    "plugins/webflow-skills/skills",
-    "plugins/webflow-code-component-skills/skills",
-    "plugins/webflow-cli-skills/skills"
-  ],
+  "skills": ["plugins/webflow-skills/skills"],
   "agents": ["agents"]
 }
