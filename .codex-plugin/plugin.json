@@ -1,13 +1,13 @@
 {
   "name": "webflow",
   "version": "1.0.0",
-  "description": "Production-ready Codex plugin for Webflow MCP, CMS workflows, site audits, Designer tools, Webflow CLI, and Code Components.",
+  "description": "Use Webflow MCP and agent skills to manage CMS content, audit sites, publish safely, work in Designer, and run Webflow CLI workflows.",
   "author": {
     "name": "Webflow",
     "email": "developers@webflow.com",
     "url": "https://developers.webflow.com"
   },
-  "homepage": "https://developers.webflow.com/mcp",
+  "homepage": "https://github.com/webflow/webflow-skills#readme",
   "repository": "https://github.com/webflow/webflow-skills",
   "license": "MIT",
   "keywords": [
@@ -25,8 +25,8 @@
   "mcpServers": "./.codex-mcp.json",
   "interface": {
     "displayName": "Webflow",
-    "shortDescription": "Use Webflow MCP with Webflow skills",
-    "longDescription": "Connect Codex to Webflow MCP and Webflow's agent skills for CMS management, site audits, accessibility checks, Designer work, CLI workflows, and Code Components.",
+    "shortDescription": "Manage CMS, audit sites, and publish with Webflow MCP",
+    "longDescription": "Use Webflow MCP plus Webflow agent skills to manage CMS content, audit SEO, accessibility, assets, and links, prepare safe publishes, work in Designer, and run Webflow CLI and Code Components workflows.",
     "developerName": "Webflow",
     "category": "Productivity",
     "capabilities": [
@@ -40,7 +40,7 @@
     "defaultPrompt": [
       "Audit my Webflow site",
       "Update Webflow CMS items",
-      "Build in Webflow Designer"
+      "Prepare a safe publish checklist"
     ],
     "brandColor": "#146EF5",
     "composerIcon": "./assets/logo.svg",
