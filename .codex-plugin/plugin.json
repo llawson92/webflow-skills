@@ -25,8 +25,8 @@
   "mcpServers": "./.codex-mcp.json",
   "interface": {
     "displayName": "Webflow",
-    "shortDescription": "Manage CMS, audit sites, and publish with Webflow MCP",
-    "longDescription": "Use Webflow MCP plus Webflow agent skills to manage CMS content, audit SEO, accessibility, assets, and links, prepare safe publishes, work in Designer, and run Webflow CLI and Code Components workflows.",
+    "shortDescription": "Build, audit, and publish Webflow sites from Codex",
+    "longDescription": "Connect Codex to Webflow MCP for Designer, CMS, site audit, publishing, CLI, and Code Components workflows. Inspect pages, update content, validate site health, and prepare changes with clear review steps.",
     "developerName": "Webflow",
     "category": "Productivity",
     "capabilities": [
