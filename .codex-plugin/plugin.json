@@ -1,0 +1,50 @@
+{
+  "name": "webflow",
+  "version": "1.0.0",
+  "description": "Production-ready Codex plugin for Webflow MCP, CMS workflows, site audits, Designer tools, Webflow CLI, and Code Components.",
+  "author": {
+    "name": "Webflow",
+    "email": "developers@webflow.com",
+    "url": "https://developers.webflow.com"
+  },
+  "homepage": "https://developers.webflow.com/mcp",
+  "repository": "https://github.com/webflow/webflow-skills",
+  "license": "MIT",
+  "keywords": [
+    "webflow",
+    "mcp",
+    "cms",
+    "designer",
+    "site-audit",
+    "seo",
+    "accessibility",
+    "code-components",
+    "webflow-cli"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.codex-mcp.json",
+  "interface": {
+    "displayName": "Webflow",
+    "shortDescription": "Use Webflow MCP with Webflow skills",
+    "longDescription": "Connect Codex to Webflow MCP and Webflow's agent skills for CMS management, site audits, accessibility checks, Designer work, CLI workflows, and Code Components.",
+    "developerName": "Webflow",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://webflow.com",
+    "privacyPolicyURL": "https://webflow.com/legal/privacy",
+    "termsOfServiceURL": "https://webflow.com/legal/terms",
+    "defaultPrompt": [
+      "Audit my Webflow site",
+      "Update Webflow CMS items",
+      "Build in Webflow Designer"
+    ],
+    "brandColor": "#146EF5",
+    "composerIcon": "./assets/logo.svg",
+    "logo": "./assets/logo.svg",
+    "screenshots": []
+  }
+}
