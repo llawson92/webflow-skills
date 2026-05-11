@@ -18,10 +18,12 @@ webflow --version
 If the command is not found, install it:
 
 ```bash
-npm install -g @webflow/webflow-cli
-# or yarn global add @webflow/webflow-cli
-# or pnpm add -g @webflow/webflow-cli
+npm install -g @webflow/webflow-cli@next
+# or yarn global add @webflow/webflow-cli@next
+# or pnpm add -g @webflow/webflow-cli@next
 ```
+
+> **Use the `@next` dist-tag.** The features described in this skill (`cloud init --new`, standalone-app first-deploy, GitHub-fetched scaffolds, etc.) currently ship on the `@next` tag only. `@latest` is older and missing these commands — installing it will produce confusing "unknown flag" errors. Once the next major release promotes `@next` to `@latest`, this distinction will go away.
 
 Then proceed to state detection.
 
@@ -495,7 +497,7 @@ jobs:
           node-version: 20
 
       - name: Install Webflow CLI
-        run: npm install -g @webflow/webflow-cli@latest
+        run: npm install -g @webflow/webflow-cli@next
 
       - name: Deploy
         run: |
