@@ -292,22 +292,18 @@ webflow auth login
 
 > `webflow auth login` performs an OAuth flow in the user's browser and then writes the token to `.env`. It refuses to run with `--no-input` (exits with `No-input mode enabled. Aborting OAuth authentication`). **Agents cannot drive this command.** If `webflow auth login` is needed (missing or expired token), ask the user to run it locally once and report back when it's done.
 
-The token written to `.env` depends on the init mode. Site-attached and app modes use **different env var names** — do not mix them up in CI.
+The CLI writes the same token env var for **both** modes. There is no per-mode split.
 
-**Site-attached init** writes:
+**`webflow auth login` writes to `.env`:**
 
-| Variable | Description |
-|---|---|
-| `WEBFLOW_SITE_API_TOKEN` | OAuth access token. Required for deploy. Set by `webflow auth login` in site-attached mode. |
-| `WEBFLOW_SITE_ID` | Set during `cloud init` (site-attached). |
+| Variable | Always written? | Description |
+|---|---|---|
+| `WEBFLOW_API_TOKEN` | Yes (both modes) | OAuth access token. The canonical token env var. Set by `webflow auth login`. |
+| `WEBFLOW_SITE_ID` | Site-attached only (or after first project-app deploy) | Site ID. Written by `cloud init` for site-attached projects, or by `cloud deploy` for project apps after the first deploy provisions a site. |
 
-**Project-app init (`--new`)** writes:
+After the **first project-app deploy**, the CLI provisions a site on the backend and writes `WEBFLOW_SITE_ID` to `.env`. From that point on, the project behaves like a site-attached project — but the token env var is still `WEBFLOW_API_TOKEN`.
 
-| Variable | Description |
-|---|---|
-| `WEBFLOW_API_TOKEN` | Unified CLI access token. Required for deploy. Set by `webflow auth login` in app mode. **Not** the same env var as site-attached. |
-
-After the **first project-app deploy**, the CLI provisions a site on the backend and additionally writes `WEBFLOW_SITE_ID` to `.env` automatically. From that point on the project behaves like a site-attached project for subsequent deploys.
+**Deprecated legacy:** `WEBFLOW_SITE_API_TOKEN` (and `WEBFLOW_WORKSPACE_API_TOKEN`) are read-only legacy fallbacks. The CLI never writes them, but if it finds one of them set in the environment when `WEBFLOW_API_TOKEN` is not set, it uses the legacy value **and prints a deprecation warning on every run**. Do not put `WEBFLOW_SITE_API_TOKEN` in `.env` or CI secrets for new projects — use `WEBFLOW_API_TOKEN`.
 
 Other env vars (any mode):
 
@@ -318,7 +314,7 @@ Other env vars (any mode):
 
 > **`WEBFLOW_SITE_ID` env var behaviour differs by build channel.** On stable builds the CLI auto-persists the env var into `webflow.json` (legacy back-compat). On `@next` builds it's **read-only** — used at runtime when no flag or manifest value is set, but never written back to `webflow.json`. Skill consumers on `@next` should not expect `WEBFLOW_SITE_ID=X` to update the manifest.
 
-> **GitHub Secrets:** mirror the env vars the CLI wrote to `.env` — `WEBFLOW_SITE_API_TOKEN` (+ `WEBFLOW_SITE_ID`) for site-attached and post-first-deploy project apps, `WEBFLOW_API_TOKEN` for project apps that have not yet been deployed once. Never commit `.env` files.
+> **GitHub Secrets:** use `WEBFLOW_API_TOKEN` for the token in every mode. Also set `WEBFLOW_SITE_ID` for site-attached projects and project apps that have already had their first deploy. Never commit `.env` files. If existing CI uses `WEBFLOW_SITE_API_TOKEN`, rename it — the deploy will still succeed but every run prints a deprecation warning until you switch.
 
 ### Configuration — webflow.json
 
@@ -420,8 +416,7 @@ webflow cloud init --new
 |---|---|---|
 | OAuth / site selection | Required at init | Skipped (workspace selection instead) |
 | `WEBFLOW_SITE_ID` in `.env` | Written at init | Written **after first deploy** only |
-| `WEBFLOW_SITE_API_TOKEN` in `.env` | Written | Not written |
-| `WEBFLOW_API_TOKEN` in `.env` | Not written | Written |
+| `WEBFLOW_API_TOKEN` in `.env` | Written | Written |
 | `cloud.workspace_id` in `webflow.json` | Not set | Set at init (used by first deploy) |
 | Scaffold | `astro`, `nextjs` | `astro`, `nextjs` |
 | Mount path | Configurable (default `/app`) | Always `/` |
@@ -648,7 +643,7 @@ jobs:
             --skip-mount-path-check \
             --skip-update-check
         env:
-          WEBFLOW_SITE_API_TOKEN: ${{ secrets.WEBFLOW_SITE_API_TOKEN }}
+          WEBFLOW_API_TOKEN: ${{ secrets.WEBFLOW_API_TOKEN }}
           WEBFLOW_SITE_ID: ${{ secrets.WEBFLOW_SITE_ID }}
           # For project apps pre-first-deploy, omit WEBFLOW_SITE_ID
 ```
@@ -749,7 +744,7 @@ Passing `--no-input` is not strictly required for the prompts to be skipped — 
 
 ### `cloud init --new` hangs forever / never returns
 
-Workspace selection in app mode prompts unconditionally when the token sees more than one workspace, with no `--workspace` flag and no non-TTY fallback. In a non-TTY context the CLI hangs at the prompt.
+Workspace selection in project-app mode prompts unconditionally when the token sees more than one workspace. On stable builds, there is no `--workspace-id` flag and no non-TTY fallback, so in a non-TTY context the CLI hangs at the prompt. On `@next` builds, pass `--workspace-id` to skip the picker.
 
 **Fix:** pass `--workspace-id <id>` to `cloud init --new`. The workspace ID is not visible in the Webflow dashboard UI, so when the agent doesn't have one, ask the user to run `webflow cloud deploy` interactively from inside an existing project. The `@next` preflight prompt picks a workspace and writes `cloud.workspace_id` to `webflow.json` — the agent can then read it and pass `--workspace-id` on future runs. Single-workspace tokens are not affected — selection is auto-skipped.
 
@@ -777,9 +772,9 @@ webflow cloud deploy --no-input \
 
 ### Auth error on deploy
 
-Run `webflow auth login` and complete the browser flow. The CLI writes a new `WEBFLOW_SITE_API_TOKEN` to `.env`. Retry the deploy after login.
+Run `webflow auth login` and complete the browser flow. The CLI writes a new `WEBFLOW_API_TOKEN` to `.env`. Retry the deploy after login.
 
-In CI, browser auth is not possible — an auth error means `WEBFLOW_SITE_API_TOKEN` is missing or expired in your secrets. Fix the secret, do not attempt `webflow auth login`.
+In CI, browser auth is not possible — an auth error means `WEBFLOW_API_TOKEN` is missing or expired in your secrets. Fix the secret, do not attempt `webflow auth login`. If the CI uses the legacy `WEBFLOW_SITE_API_TOKEN`, the deploy will still work but the run log shows a deprecation warning; rename the secret to `WEBFLOW_API_TOKEN` to clear it.
 
 ### Deploying to a different workspace
 
