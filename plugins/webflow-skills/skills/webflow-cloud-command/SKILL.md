@@ -1,443 +1,622 @@
 ---
 name: webflow-cli:cloud
-description: Initialize, build, and deploy full-stack Webflow applications to Webflow Cloud hosting. List available templates, initialize projects with cloud init, and deploy with comprehensive validation. Use when creating or deploying Webflow Cloud applications.
+description: Initialize, build, and deploy full-stack Webflow applications to Webflow Cloud hosting. Supports site-attached deploys (linked to an existing Webflow site) and project app deploys (independent project, no existing site required). Use when creating new projects, deploying existing ones, or setting up CI/CD pipelines for Webflow Cloud.
 ---
 
 # Webflow Cloud
 
-Initialize new projects from templates, build applications, and deploy to Webflow Cloud with comprehensive validation and deployment verification.
-
-## Important Note
-
-**ALWAYS use Bash tool for all Webflow CLI operations:**
-- Execute `webflow cloud` commands via Bash tool
-- Use Read tool to examine configuration files (never modify)
-- Use Glob tool to discover project files
-- Verify CLI installation: `webflow --version`
-- Check authentication: Use `webflow auth login` for site authentication
-- DO NOT use Webflow MCP tools for CLI workflows
-- All CLI commands require proper descriptions (not context parameters)
-
-**Non-Interactive Deployment (CRITICAL for agents and automation):**
-The Webflow CLI is interactive by default (environment selection prompts, mount path prompts, update checks). Since AI agents and CI/CD pipelines cannot interact with interactive prompts, you MUST always use these flags together for deployment:
-- `--no-input` — Disables all interactive prompts (environment selection, confirmations, etc.)
-- `--mount <MOUNT_PATH>` — REQUIRED with `--no-input` to avoid `ENVIRONMENT_MOUNT_MISMATCH` errors. You MUST determine the correct mount path before deploying — see below.
-- `--skip-mount-path-check` — Skips interactive mount path validation
-- `--skip-update-check` — Skips the interactive package update check
-
-**Determining the mount path (NEVER assume a default):**
-The mount path varies between projects (e.g., `/app`, `/`, `/blog`). Assuming a common default like `/app` WILL cause deployment failures if the project uses a different path. The Webflow CLI does NOT persist the mount path to `webflow.json` after init or deploy, so it is often not available in local config. Follow these steps in order:
-1. **Check `webflow.json`** — Read the `cloud` section and look for a `mount` or `mountPath` field. It is usually NOT present, but check anyway.
-2. **Ask the user** — If the mount path is not in `webflow.json` (which is the common case), you MUST ask the user before deploying: _"What mount path does this project use? (e.g., /app, /, /blog)"_. Do NOT guess, do NOT assume `/app`, and do NOT proceed without a confirmed mount path.
-
-The canonical non-interactive deploy command is:
-```bash
-webflow cloud deploy --no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check
-```
-Add `--auto-publish` if the user wants changes published immediately.
-
-**Package Manager Detection:**
-- Check for lock files: `package-lock.json` (npm), `pnpm-lock.yaml` (pnpm), `yarn.lock` (yarn)
-- If no lock file found, ask user which package manager to use (npm/pnpm/yarn)
-- Use detected package manager for all install/build commands
+Initialize new projects from templates and deploy to Webflow Cloud. Supports two modes: **site-attached** (deploy to an existing Webflow site) and **project app** (deploy as an independent project, no existing site required).
 
 ## Instructions
 
-### Phase 1: Determine Operation Type
-1. **Identify user intent**: What does the user want to do?
-   - List available project templates (`cloud list`)
-   - Initialize new Cloud project (`cloud init`)
-   - Deploy existing Cloud project (`cloud deploy`)
-2. **Verify CLI installed**: Run `webflow --version` to confirm CLI is installed
-3. **Check project state**: Determine if in existing project or starting new
+### Step 0: Verify CLI is installed
 
-### Phase 2A: List Templates (if needed)
-4. **List available templates**: Run `webflow cloud list`
-5. **Show template options**: Display available frameworks (Astro, Next.js, etc.)
-6. **Explain templates**: Brief description of each template
+```bash
+webflow --version
+```
 
-### Phase 2B: Initialize New Project (if needed)
-7. **Run cloud init**: Execute `webflow cloud init` with options:
-   - `--framework` or `-f`: Choose framework (astro, nextjs)
-   - `--mount` or `-m`: Mount path (e.g., `/app`)
-   - `--site-id` or `-s`: Webflow site ID to connect
-8. **Monitor initialization**: Show CLI output
-9. **Verify project created**: Check for webflow.json and project structure
-10. **Show configuration**: Read and display webflow.json with cloud section
+If the command is not found, install it:
 
-### Phase 2C: Validate Existing Project (if deploying)
-11. **Check authentication**: Verify site authentication (created via `webflow auth login`)
-12. **Read project configuration**: Examine `webflow.json` cloud section:
-    - `projectId`: Cloud project identifier (set automatically on first deploy)
-    - `framework`: Either "nextjs" or "astro"
-    - `mount` or `mountPath`: Mount path (may or may not be present)
-13. **Determine mount path**: Follow the "Determining the mount path" steps above. If the mount path is not in `webflow.json`, ask the user before proceeding. NEVER default to `/app` or any other value.
-14. **Validate project structure**:
-    - Required files present
-    - Build scripts configured
-    - webflow.json has cloud configuration
+```bash
+npm install -g @webflow/webflow-cli@next
+# or yarn global add @webflow/webflow-cli@next
+# or pnpm add -g @webflow/webflow-cli@next
+```
 
-### Phase 3: Build Execution (for deployment)
-14. **Run build command**: Execute `npm run build` or configured build script
-15. **Monitor build progress**: Show build output and detect errors
-16. **Validate build output**:
-    - Build artifacts created
-    - Output directory exists
-    - No critical errors
+> **Use the `@next` dist-tag.** The features described in this skill (`cloud init --new`, project-app first deploy, GitHub-fetched scaffolds, etc.) currently ship on the `@next` tag only. `@latest` is older and missing these commands — installing it will produce confusing "unknown flag" errors. Once the next major release promotes `@next` to `@latest`, this distinction will go away.
 
-### Phase 4: Deployment Preview (for deployment)
-17. **Show deployment summary**:
-    - Project name and framework
-    - Build output location
-    - Environment configuration (if using --env)
-    - Mount path (if specified)
-    - Auto-publish setting (if using --auto-publish)
-18. **Explain deployment process**: What happens during deployment
-19. **Require explicit confirmation**: User must type "deploy" to proceed
+Then proceed to state detection.
 
-### Phase 5: Deployment Execution
-20. **Execute deploy command**: Run `webflow cloud deploy` with non-interactive flags:
-    - `--no-input`: REQUIRED — disables all interactive prompts
-    - `--mount` or `-m`: REQUIRED — mount path (e.g., `/app`). Must match the existing environment's mount path.
-    - `--skip-mount-path-check`: REQUIRED — skips interactive mount path validation
-    - `--skip-update-check`: RECOMMENDED — skips interactive package update check
-    - `--auto-publish`: Optional — publish site after deployment
-    - `--project-name` or `-p`: Project name (for new projects only)
-    - `-e` or `--environment`: Environment name (defaults to first available with `--no-input`)
-21. **Monitor deployment progress**: Show CLI output and deployment stages
-22. **Verify deployment success**: Confirm deployment completed
-23. **Provide post-deployment information**:
-    - Deployment success message
-    - Site URL (if published)
-    - Next steps
+### Step 1: Detect project state
+
+Run both checks before deciding which path to follow:
+
+```bash
+# Is this project already set up on Webflow Cloud?
+cat webflow.json
+
+# Is there a git remote?
+git remote get-url origin 2>/dev/null
+```
+
+**Quick reference:**
+
+| `cloud.project_id` in `webflow.json` | git remote | → Path |
+|---|---|---|
+| No | — | **A** — new project |
+| Yes | No | **B** — existing project, no git |
+| Yes | Yes | **C** — ideal state |
+
+---
+
+> **You are running without a TTY.** The CLI's interactive prompts only fire when `process.stdin.isTTY` is true. As an agent invoking the CLI through a subprocess, you do not have a TTY — every prompt is silently skipped, and any required value that wasn't passed as a flag triggers a hard error like `--project-name cannot be empty`.
+>
+> **Rule for every command in this skill:** pass all required flags explicitly. Never rely on prompts. Pass `--no-input` when the CLI accepts it to make this contract explicit. The required flag set per command:
+>
+> | Command | Always pass |
+> |---|---|
+> | `cloud init` (site-attached) | `--no-input --project-name <3–39 chars> --framework <astro\|nextjs> --mount <path> --site-id <id>` |
+> | `cloud init --new` (app) | `--no-input --project-name <3–39 chars> --framework <astro\|nextjs> --workspace-id <id>` |
+> | `cloud deploy` (site-attached) | `--no-input --mount <path> --environment <env> --site-id <id>` plus `--project-name` on first deploy |
+> | `cloud deploy` (project app, first deploy) | `--no-input --mount <path> --environment <env> --workspace-id <id> --project-name <name>` |
+>
+> `--site-id`, `--project-id`, `--framework`, and `--workspace-id` on `cloud deploy` are new — they let agents override what's in `webflow.json` at deploy time. `--workspace-id` (on both init and deploy) is currently `@next`-only and will become unconditional once `@next` promotes to `@latest`.
+>
+> **Multi-workspace tokens used to be an agent-fatal hang** because workspace selection had no non-TTY path. Now pass `--workspace-id` to skip the picker. **The workspace ID is not surfaced anywhere in the Webflow dashboard UI** — users can't look it up by hand. If the agent doesn't have it, ask the user to run `webflow cloud deploy` interactively once from inside their project. The `@next` preflight prompts for workspace selection and writes `cloud.workspace_id` to `webflow.json`; from that point the agent can read it from the manifest and pass `--workspace-id` on subsequent runs. Do **not** suggest `cloud init --new` for ID discovery — on an existing project it creates a discarded scratch directory.
+
+---
+
+### Path A: No `project_id` — new project
+
+The project has not been deployed yet. **Before doing anything else, ask the user one question:**
+
+> "Do you already have source code for this project (an existing Next.js or Astro codebase), or are you starting from an empty directory and want a Webflow starter scaffold?"
+
+That answer chooses the branch — and they're meaningfully different:
+
+| User has... | Branch | Init step |
+|---|---|---|
+| **Existing code** (their own Next.js / Astro project) | **Path A1** | **Skip `cloud init`.** It would create a `./<project-name>/` subfolder with a hello-world scaffold inside their repo, which they don't want. |
+| **Empty directory** or wants a Webflow starter | **Path A2** | Run `cloud init` to scaffold from `Webflow-Examples/hello-world-*`. |
+
+After the branch decision, also ask **site-attached vs app** (only relevant before the first deploy):
+
+| User says... | Mode | Outcome |
+|---|---|---|
+| "deploy to my Webflow site `<name>`", "site-attached", references an existing site | **Site-attached** | Project is bound to an existing Webflow site; site URL hosts the app at the chosen mount path. Requires `--site-id`. |
+| "project app", "standalone", "just an app", "no site", or no existing site mentioned | **Project app** | First deploy provisions a brand-new Webflow site (`<project-name>-<hash>.webflow.io`). |
+
+If the user is ambiguous on either question, **ask**. Do not default.
+
+---
+
+#### Path A1: existing codebase, no Webflow Cloud config yet
+
+The user has working source. `cloud deploy` handles everything — framework detection runs against `package.json`, and on `@next` the preflight phase resolves identity from flags or prompts the user. No `cloud init` needed, no `webflow.json` to hand-write up front.
+
+**Step 1: One-time auth (human-only).** Tell the user to run this locally; agents cannot drive the browser flow:
+
+```bash
+webflow auth login
+```
+
+**Step 2: Deploy.** The exact form depends on what the agent knows.
+
+**A1-a — Site-attached, `--site-id` is known:**
+
+```bash
+webflow cloud deploy --no-input \
+  --site-id site_abc123 \
+  --project-name my-app \
+  --framework nextjs \
+  --mount /app \
+  --environment main \
+  --skip-mount-path-check \
+  --skip-update-check
+```
+
+`--framework` is optional if `package.json` has the framework's Cloudflare adapter (`@opennextjs/cloudflare`, `@astrojs/cloudflare`). Pass it explicitly for monorepos or when auto-detection is unreliable.
+
+**A1-b — Project app, `--workspace-id` is known:**
+
+```bash
+webflow cloud deploy --no-input \
+  --workspace-id ws_abc123 \
+  --project-name my-app \
+  --framework nextjs \
+  --mount / \
+  --environment main \
+  --skip-mount-path-check \
+  --skip-update-check
+```
+
+**A1-c — Project app, workspace ID is unknown** (the common gap):
+
+**The workspace ID is not visible anywhere in the Webflow dashboard UI.** Users cannot look it up by hand — the only way to discover it is to run the CLI. So the path is:
+
+**Ask the user to run one interactive deploy locally.** From inside their project directory:
+
+```bash
+webflow cloud deploy
+```
+
+With no `--no-input` and no identity flags, the `@next` preflight prompts: *"This project isn't initialized for Webflow Cloud. How would you like to deploy?"* → user picks "Create a new app" → workspace picker → done. After this one human-driven deploy, `cloud.workspace_id` and `siteId` are written to `webflow.json` and `WEBFLOW_SITE_ID` to `.env`. The agent can then run all subsequent deploys with `--site-id` (the newly provisioned site).
+
+> Do **not** ask the user to run `cloud init --new` to "discover" their workspace ID. On an existing project that creates a discarded `./<project-name>/` scratch directory with a hello-world scaffold inside the user's repo. Use the interactive `cloud deploy` path above — it discovers the workspace ID *and* completes the first deploy in the same step.
+
+**Step 3: Set up git** (if not already) — same as Path A2 step 3 below.
+
+---
+
+#### Path A2: empty directory, scaffold from scratch
+
+1. **Scaffold the project** — pick the form that matches the user's intent:
+
+   ```bash
+   # Project app (no site attachment). --workspace-id avoids the multi-workspace hang.
+   webflow cloud init --new --no-input \
+     --project-name my-app \
+     --framework astro \
+     --workspace-id ws_abc123
+   ```
+
+   ```bash
+   # Site-attached (connect to an existing Webflow site). Requires --site-id.
+   webflow cloud init --no-input \
+     --project-name my-app \
+     --framework astro \
+     --mount /app \
+     --site-id site_abc123
+   ```
+
+   See [`cloud init`](#webflow-cloud-init) for all flags. If you don't have `--site-id` (site-attached) or `--workspace-id` (app), ask the user before running anything.
+
+2. **Deploy:** pick the form matching the init form above. Pass `--site-id` (or `--workspace-id` for project-app first deploy) so the deploy can't misread the manifest if something is half-written.
+
+   ```bash
+   # Project-app first deploy — provisions the Cloud site/project/env
+   webflow cloud deploy \
+     --no-input \
+     --project-name my-app \
+     --workspace-id ws_abc123 \
+     --mount / \
+     --environment main \
+     --skip-mount-path-check \
+     --skip-update-check
+   ```
+
+   ```bash
+   # Site-attached first deploy — uses the existing Webflow site
+   webflow cloud deploy \
+     --no-input \
+     --project-name my-app \
+     --site-id site_abc123 \
+     --mount /app \
+     --environment main \
+     --skip-mount-path-check \
+     --skip-update-check
+   ```
+
+   This creates the project on Webflow Cloud and sets `cloud.project_id` in `webflow.json`. Commit the updated `webflow.json`.
+
+3. **Set up git** (if not already):
+   ```bash
+   git init && git add . && git commit -m "init"
+   git remote add origin https://github.com/your-org/my-app.git
+   git push -u origin main
+   ```
+
+4. **(Optional) Enable push-to-deploy via the Webflow dashboard.** Pushing to GitHub alone does **not** trigger deploys — that wiring lives in the Webflow dashboard, not in the CLI or the repo. Tell the user:
+
+   1. Open the Webflow dashboard → their Cloud project → **Settings** → **Git**
+   2. Connect their GitHub account, then select the repository and branch
+   3. Confirm — the dashboard runs one initial deploy automatically to verify the connection
+   4. From that moment on, every push to the connected branch triggers a deploy
+
+   The CLI cannot perform any of these steps. If the user skips this, every deploy must be a manual `webflow cloud deploy` invocation (Path B–style) or a CI/CD pipeline.
+
+> If a deploy auth error occurs in step 2: run `webflow auth login`, complete the browser flow, then retry.
+
+---
+
+### Path B: `project_id` exists, no git remote — existing project, no git
+
+The project is already on Webflow Cloud but has no git repo. Deploy directly and nudge toward git setup.
+
+1. **Deploy:** read `webflow.json` first. If `siteId` is set, pass `--site-id` matching it. If only `cloud.workspace_id` is set, pass `--workspace-id` matching it.
+
+   ```bash
+   webflow cloud deploy \
+     --no-input \
+     --site-id site_abc123 \
+     --mount / \
+     --environment main \
+     --skip-mount-path-check \
+     --skip-update-check
+   ```
+
+2. **Nudge toward push-to-deploy:** suggest the user initialize a git repo, push to GitHub, **and then connect the repo in the Webflow dashboard** (project → Settings → Git). The dashboard step is what activates push-to-deploy — the CLI can't do this. See Path A, steps 3–4.
+
+> If a deploy auth error occurs: run `webflow auth login`, complete the browser flow, then retry step 1.
+
+---
+
+### Path C: `project_id` exists + git remote — possibly ideal
+
+The project is deployed and has a git remote, **but the existence of a remote is not proof that push-to-deploy is wired up.** That wiring is a dashboard-side connection that the CLI can't introspect. Confirm before suggesting anything.
+
+> **Always ask the user:** *"Is this repo connected to your Webflow Cloud project in the dashboard (project → Settings → Git, with a branch selected)?"* The answer changes the recommendation:
+>
+> - **Yes, connected** — push-to-deploy is active. The only action needed is `git push`. Do not suggest re-linking or re-deploying.
+> - **No, not connected** — `git push` does nothing on the Webflow side. Either run a manual deploy now, or have the user connect the repo in the dashboard first to activate push-to-deploy for future commits.
+> - **Don't know** — assume not connected and recommend the dashboard connection (one-time setup, then push-to-deploy is permanent).
+
+1. **If connected** — just commit and push:
+   ```bash
+   git add .
+   git commit -m "your message"
+   git push
+   ```
+   Webflow Cloud picks up the push and deploys automatically. The first deploy after connection is run by the dashboard itself; subsequent pushes are picked up automatically.
+
+2. **If not connected** — two routes:
+
+   - **Activate push-to-deploy for future commits** (recommended). Tell the user to open the Webflow dashboard → their Cloud project → **Settings** → **Git**, connect the repo, select the branch. The dashboard runs an initial deploy automatically to verify the connection. From then on, every `git push` to that branch deploys.
+   - **One-off manual deploy now**, without enabling push-to-deploy. Pass `--site-id` matching the `siteId` in `webflow.json`:
+     ```bash
+     webflow cloud deploy \
+       --no-input \
+       --site-id site_abc123 \
+       --mount / \
+       --environment main \
+       --skip-mount-path-check \
+       --skip-update-check
+     ```
+     This deploys the current state but does **not** wire up push-to-deploy. The next `git push` will still be a no-op on the Webflow side.
+
+> If a deploy auth error occurs: run `webflow auth login`, complete the browser flow, then retry.
+
+### Tool usage
+
+- Use the **Bash tool** for all `webflow cloud` commands
+- Use the **Read tool** to examine `webflow.json`, `package.json` — never modify these directly
+- Use the **Glob tool** to discover project files
+- **Do not** use Webflow MCP tools for CLI workflows
+
+### Authentication
+
+```bash
+# Interactive — local-only, opens a browser. NOT for agents or CI.
+webflow auth login
+```
+
+> `webflow auth login` performs an OAuth flow in the user's browser and then writes the token to `.env`. It refuses to run with `--no-input` (exits with `No-input mode enabled. Aborting OAuth authentication`). **Agents cannot drive this command.** If `webflow auth login` is needed (missing or expired token), ask the user to run it locally once and report back when it's done.
+
+The CLI writes the same token env var for **both** modes. There is no per-mode split.
+
+**`webflow auth login` writes to `.env`:**
+
+| Variable | Always written? | Description |
+|---|---|---|
+| `WEBFLOW_API_TOKEN` | Yes (both modes) | OAuth access token. The canonical token env var. Set by `webflow auth login`. |
+| `WEBFLOW_SITE_ID` | Site-attached only (or after first project-app deploy) | Site ID. Written by `cloud init` for site-attached projects, or by `cloud deploy` for project apps after the first deploy provisions a site. |
+
+After the **first project-app deploy**, the CLI provisions a site on the backend and writes `WEBFLOW_SITE_ID` to `.env`. From that point on, the project behaves like a site-attached project — but the token env var is still `WEBFLOW_API_TOKEN`.
+
+**Deprecated legacy:** `WEBFLOW_SITE_API_TOKEN` (and `WEBFLOW_WORKSPACE_API_TOKEN`) are read-only legacy fallbacks. The CLI never writes them, but if it finds one of them set in the environment when `WEBFLOW_API_TOKEN` is not set, it uses the legacy value **and prints a deprecation warning on every run**. Do not put `WEBFLOW_SITE_API_TOKEN` in `.env` or CI secrets for new projects — use `WEBFLOW_API_TOKEN`.
+
+Other env vars (any mode):
+
+| Variable | Description |
+|---|---|
+| `DO_NOT_TRACK` | Set to `1` to opt out of telemetry. |
+| `WEBFLOW_SKIP_UPDATE_CHECKS` | Set to `true` to skip the @webflow package update check. |
+
+> **`WEBFLOW_SITE_ID` env var behaviour differs by build channel.** On stable builds the CLI auto-persists the env var into `webflow.json` (legacy back-compat). On `@next` builds it's **read-only** — used at runtime when no flag or manifest value is set, but never written back to `webflow.json`. Skill consumers on `@next` should not expect `WEBFLOW_SITE_ID=X` to update the manifest.
+
+> **GitHub Secrets:** use `WEBFLOW_API_TOKEN` for the token in every mode. Also set `WEBFLOW_SITE_ID` for site-attached projects and project apps that have already had their first deploy. Never commit `.env` files. If existing CI uses `WEBFLOW_SITE_API_TOKEN`, rename it — the deploy will still succeed but every run prints a deprecation warning until you switch.
+
+### Configuration — webflow.json
+
+```json
+{
+  "siteId": "site_abc123",
+  "cloud": {
+    "project_id": "proj_xyz",
+    "environment_id": "env_xyz",
+    "workspace_id": "ws_xyz",
+    "framework": "nextjs",
+    "skipMountPathCheck": false
+  }
+}
+```
+
+All `cloud.*` keys are **snake_case** (`project_id`, not `projectId`).
+
+| Key | When set | Notes |
+|---|---|---|
+| `siteId` | Site-attached: at `cloud init`. Project app: after first deploy (CLI provisions a site). | Absent on project apps that have not been deployed yet. |
+| `cloud.framework` | At `cloud init`. | Required for deploy resolution — see below. |
+| `cloud.project_id` | After first deploy. | Auto-written. |
+| `cloud.environment_id` | After first **project-app** deploy. | Auto-written by `createCloudApp`. |
+| `cloud.workspace_id` | At project-app `cloud init` (`--new`). | Used by the first deploy to provision the site. |
+| `cloud.skipMountPathCheck` | User-managed. | Equivalent to `--skip-mount-path-check`. |
+
+The CLI also writes `cloud.deployment_type` (`"ssr" | "ssg" | "spa"`) and `cloud.entrypoint_path` into the **bundled** `webflow.json` at build time (these power the cosmic deployer's wrangler config). They're build-time outputs — do not strip them from the source `webflow.json` if you find them there; missing values silently break Next.js server-side deploys.
+
+**`cloud.framework` resolution at deploy time:**
+
+1. **`webflow.json` exists with `cloud.framework`** — used as-is. Invalid value exits with code 1.
+2. **`webflow.json` exists but `cloud.framework` is absent** — throws: _"webflow.json exists but doesn't contain valid framework information under the 'cloud' key"_. Add `"cloud": { "framework": "nextjs" }` manually.
+3. **No `webflow.json`** — auto-detected from `package.json`. CLI **writes a new `webflow.json`** on success.
+
+Projects created via `cloud init` always land in case 1.
+
+### Commands
+
+#### webflow cloud list
+
+```bash
+webflow cloud list
+```
+
+Lists available scaffold templates. Check this before `cloud init --framework` to confirm valid scaffold IDs.
+
+#### webflow cloud init
+
+Bootstrap a new project locally. Two modes: **site-attached** and **app**.
+
+**Site-attached** (connects to an existing Webflow site):
+
+```bash
+# Agent / non-TTY — always pass every flag
+webflow cloud init \
+  --no-input \
+  --project-name my-app \
+  --framework nextjs \
+  --mount /app \
+  --site-id site_abc123
+
+# Human at a real terminal — interactive prompts will fill in any missing flag
+webflow cloud init
+```
+
+Flags:
+
+| Flag | Short | Description |
+|---|---|---|
+| `--project-name <name>` | `-n` | Project name. **Must be 3–39 characters** — the CLI rejects anything outside this range at init and at the first project-app deploy. |
+| `--framework <framework>` | `-f` | Must match a scaffold ID from `cloud list`. Currently: `nextjs`, `astro`. |
+| `--mount <path>` | `-m` | Mount path (default `/app` for site-attached, `/` for app). Substituted into config files at scaffold time. Not stored in `webflow.json`. |
+| `--site-id <id>` | `-s` | Required in non-interactive site-attached mode. Mutually exclusive with `--workspace-id`. |
+| `--workspace-id <id>` | `-w` | **`@next` only.** Skips the workspace picker for `--new` (app mode). Mutually exclusive with `--site-id`. |
+| `--new` | — | Project-app mode (no site). |
+| `--no-input` | — | CI mode. Requires `--project-name` and `--framework`. Without `--new`, defaults to app behavior. |
+
+Credential resolution for `--no-input` site-attached: `--site-id` flag → `siteId` in `webflow.json` → `WEBFLOW_SITE_ID` env var → error.
+
+After scaffolding a site-attached project, the CLI automatically runs a **DevLink sync**.
+
+**Project app** (no site attachment):
+
+```bash
+# Agent / non-TTY — always pass --workspace-id to skip the workspace picker
+webflow cloud init --new --no-input \
+  --project-name my-app \
+  --framework nextjs \
+  --workspace-id ws_abc123
+
+# Human at a real terminal — prompts for workspace if not passed
+webflow cloud init --new
+```
+
+> `--workspace-id` is currently `@next`-only. Stable builds silently ignore it and fall through to the picker. If the token sees multiple workspaces and the agent doesn't have a workspace ID, ask the user to run `webflow cloud deploy` interactively from inside their project — the preflight prompt picks a workspace and writes `cloud.workspace_id` to `webflow.json` for subsequent agent-driven runs. The workspace ID is not exposed in the Webflow dashboard UI, so the interactive CLI run is the only practical way to discover it.
+
+| | Site-attached | Project app (`--new`) |
+|---|---|---|
+| OAuth / site selection | Required at init | Skipped (workspace selection instead) |
+| `WEBFLOW_SITE_ID` in `.env` | Written at init | Written **after first deploy** only |
+| `WEBFLOW_API_TOKEN` in `.env` | Written | Written |
+| `cloud.workspace_id` in `webflow.json` | Not set | Set at init (used by first deploy) |
+| Scaffold | `astro`, `nextjs` | `astro`, `nextjs` |
+| Mount path | Configurable (default `/app`) | Always `/` |
+| DevLink sync | Runs after init | Skipped |
+
+**Workspace selection (project-app mode only):** if `--workspace-id` is **not** passed, the CLI calls `GET /v2/workspaces` to enumerate workspaces the token has access to. Single workspace is auto-selected; multiple workspaces trigger an interactive picker. With `--workspace-id` (`@next` only) the API roundtrip is skipped — the CLI trusts the flag and surfaces a 404 later via `createCloudApp` if it's invalid. The chosen ID is persisted as `cloud.workspace_id` in `webflow.json`.
+
+**Agent caveat:** if the user's token sees more than one workspace and the agent can't pass `--workspace-id`, the picker fires and hangs in non-TTY contexts. The workspace ID is not visible in the Webflow dashboard UI, so the recovery is: **ask the user to run `webflow cloud deploy` interactively once from inside their project.** The `@next` preflight prompt picks the workspace, completes a first deploy, and writes `cloud.workspace_id` (plus `siteId`, `project_id`, `environment_id`) to `webflow.json`. The agent can then read the workspace ID from the manifest and pass `--workspace-id` (or `--site-id`, now that the site exists) on subsequent runs. To target a different workspace later, delete `cloud.workspace_id` and have the user repeat the interactive deploy.
+
+#### webflow cloud create (deprecated)
+
+`webflow cloud create <name>` still works but **emits a deprecation warning** and will be removed in a future major release. It's hardcoded to `/app` mount in site-attached mode and offers a strict subset of `cloud init`. Always prefer `cloud init` (or `cloud init --new` for app mode).
+
+#### webflow cloud deploy
+
+**Preflight phase: identity resolution.** Before any backend call, `cloud deploy` runs a preflight step that resolves whether this is a site-attached deploy or a project-app first deploy. Resolution order (first match wins):
+
+| # | Source | Result |
+|---|---|---|
+| 1 | `--site-id <id>` flag | Site-attached, overrides manifest |
+| 2 | `--workspace-id <id>` flag (`@next` only) | Project-app first deploy, overrides manifest. Mutually exclusive with `--site-id` |
+| 3 | `manifest.siteId` (from `webflow.json`) | Site-attached |
+| 4 | `manifest.cloud.workspace_id` (`@next` only) | Project-app first deploy |
+| 5 | `WEBFLOW_SITE_ID` env var | Site-attached (used at runtime only; on `@next` not persisted back to `webflow.json`) |
+| 6 | Interactive picker (no `--no-input`) | Choose: create a new app / attach to existing site / cancel |
+| 7 | No match + `--no-input` | Hard error listing required flags |
+
+This preflight phase exists to prevent the project-app deploy path from running and provisioning a Cloud app before identity is locked in — earlier versions could orphan a new Webflow site if any later step failed.
+
+> **Pass `--site-id` or `--workspace-id` explicitly whenever you can.** It defends against half-written manifests and removes the dependence on whatever state `cloud init` happened to leave behind. If the user wants site-attached, pass `--site-id`. For project-app first deploy, pass `--workspace-id` (`@next`).
+
+**Project-app first deploy** (triggered by `--workspace-id` flag or `manifest.cloud.workspace_id`) calls `POST /cosmic/workspaces/:workspace_id/cloudApps` to atomically create a site, project, and environment. On success it writes `siteId`, `cloud.project_id`, and `cloud.environment_id` into `webflow.json`, writes `WEBFLOW_SITE_ID` into `.env`, and forces `--skip-mount-path-check` for that one deploy. Subsequent deploys behave like normal site-attached deploys.
+
+If `--project-name` is omitted on the first project-app deploy, the CLI uses the **cwd folder name** (when 3–39 chars) and falls back to `"Cloud App"`. Provide `--project-name` explicitly in CI to avoid surprises.
+
+**Uninitialized projects** (no `siteId`, no `workspace_id`, no flag) on `@next`: the CLI prompts the user to create a new project app, attach to an existing site, or cancel. With `--no-input` it hard-errors listing the required flags. Agents running with `--no-input` must always supply `--site-id` or `--workspace-id` on the first deploy of an uninitialized project.
+
+There are two deployment approaches. **GitHub-linked deployment is recommended** — it requires no CI configuration. After a one-time dashboard setup (which the CLI can't do), every push to the connected branch triggers a deploy.
+
+**Option 1 (recommended): GitHub-linked deployment**
+
+Once a one-time dashboard setup is done, every push to the connected branch triggers a deploy — no CLI commands, no workflow file. **The setup is dashboard-only — the CLI cannot reach this state on its own.** Pushing a repo to GitHub does not, by itself, enable push-to-deploy.
+
+1. Push the project to GitHub (the user needs at least one commit pushed)
+2. **Tell the user to open the Webflow dashboard** → their Cloud project → **Settings** → **Git** and connect their GitHub account if not already connected
+3. Select the repository, then the branch to deploy from (e.g. `main`)
+4. Confirm — the dashboard runs an initial deploy automatically to verify the connection
+5. From that point on: `git push` to the connected branch = deploy
+
+Steps 2–4 cannot be scripted. If the user wants push-to-deploy, they have to click through the dashboard once. After that, the agent's job for this project is essentially done — future deploys happen on push.
+
+> When suggesting a deployment setup to a user, always lead with this option. Only suggest GitHub Actions if the user needs custom pre/post steps, secrets injection, or multi-environment logic that the native GitHub integration does not cover.
+
+**Option 2: GitHub Actions (manual CI/CD)**
+
+Use when you need custom build steps, environment-specific secrets, or deploy gates not supported by the native GitHub integration. See the [GitHub Actions example](#github-actions-cicd-pipeline) in the Examples section.
+
+**Option 3: Local / manual deploy**
+
+For development and one-off deploys:
+
+```bash
+webflow cloud deploy \
+  --no-input \
+  --mount / \
+  --environment main \
+  --skip-mount-path-check \
+  --skip-update-check
+```
+
+All `cloud deploy` flags:
+
+| Flag | Short | Description |
+|---|---|---|
+| `--no-input` | — | CI mode. Disables most prompts but **not** the project-select prompt — see callout below. |
+| `--mount <path>` | `-m` | Mount path. **Always required with `--no-input`.** Not auto-read from `webflow.json`. |
+| `--environment <env>` | `-e` | Environment name. Creates if it does not exist. Must be passed with `--mount`. |
+| `--project-name <name>` | `-n` | Required on first deploy with `--no-input` when no `cloud.project_id` in `webflow.json`. **Must be 3–39 characters** for project-app first deploy. |
+| `--site-id <id>` | `-s` | **New.** Webflow site ID for site-attached deploys. Overrides `siteId` in `webflow.json`. Mutually exclusive with `--workspace-id`. Use this to recover from a half-written manifest without editing JSON. |
+| `--workspace-id <id>` | `-w` | **`@next` only.** Workspace ID for project-app first deploys. Overrides `cloud.workspace_id` in `webflow.json`. Mutually exclusive with `--site-id`. |
+| `--project-id <id>` | `-p` | **New.** Cloud project ID. Skips the app picker. Overrides `cloud.project_id` in `webflow.json`. |
+| `--framework <fw>` | `-f` | **New.** Override framework detection. Must be `nextjs` or `astro`. Writes the value back into `webflow.json`. Use when auto-detection from `package.json` is unreliable (monorepos, missing dependencies, etc.). |
+| `--directory <path>` | `-d` | Project directory (default: cwd). Use for monorepos. |
+| `--description <text>` | — | Project description for the first deploy. |
+| `--skip-mount-path-check` | — | Skip domain manifest validation. Required in CI. Can also be set in `webflow.json` as `cloud.skipMountPathCheck: true`. |
+| `--auto-publish` | — | Publish the Webflow **site** to sync mount path routing. Does not affect app deployment. |
+| `--skip-update-check` | — | Skip @webflow package update check. |
+
+> **Agents: pass `--mount` AND `--environment` together, every time.** The deploy prompts (select existing project, name a new project, pick an environment) are gated on whether `--mount` and `--environment` are *both* set — not on `--no-input`. Pass `--no-input` without both and the project-select prompt still fires and hangs in non-TTY contexts. The minimum agent-safe deploy flag set is `--no-input --mount <path> --environment <env> --site-id <id>` (or `--workspace-id <id>` for project-app first deploy), plus `--project-name` whenever `cloud.project_id` is absent from `webflow.json`.
+
+### Frameworks
+
+| Framework | Init scaffold | Deploy support | Detected via package |
+|---|---|---|---|
+| `nextjs` | ✓ | ✓ | `@opennextjs/cloudflare` |
+| `astro` | ✓ | ✓ | `@astrojs/cloudflare` |
+
+Any other value in `cloud.framework` causes `cloud deploy` to exit with code 1.
+
+> **Scaffolds are fetched from GitHub at init time.** The CLI downloads scaffold tarballs from `Webflow-Examples/hello-world-{astro,nextjs}*` (pinned to the `v1` branch). `cloud init` therefore requires network access to `github.com`. Old CLI installs keep working because the registry pins a `vN` branch per scaffold-contract version.
+
+### Global flags
+
+| Flag | Description |
+|---|---|
+| `--no-input` | Disable all interactive prompts. Required for CI/automation. |
+| `--manifest <path>` | Custom path to `webflow.json`. Use for monorepos. |
+| `--skip-update-check` | Skip @webflow package update check. Alternatively, set `WEBFLOW_SKIP_UPDATE_CHECKS=true`. |
+
+## Output
+
+After a successful `cloud deploy`, the CLI prints two pieces of output.
+
+**1. Deployment dashboard URL** — always present on success:
+
+```
+https://webflow.com/dashboard/sites/{siteId}/webflow-cloud/projects/{projectId}/environments/{environmentId}/deployments/{deploymentId}
+```
+
+Always show this to the user. From here they can view build logs, deployment status, history, and environment settings.
+
+**2. Live app URL** — conditional:
+
+```
+🌐 Your cloud app will soon be available at:
+   https://{your-site}.webflow.io/{mount-path}
+```
+
+If a real URL is printed, show it to the user as the live app link. The domain is their Webflow site's domain and the path is whatever `--mount` value was used at deploy time (e.g. `/`, `/app`, or any other user-chosen path).
+
+If the output instead reads `No domains found with the correct mount path configuration yet.`, do not show a live URL — point the user to the dashboard deployment link above to check status and configure their domain.
+
+**Do not** fetch or curl either URL to verify the deploy — just return what the CLI printed.
 
 ## Examples
 
-### Example 1: List Available Templates
+### Full workflow: scaffold → GitHub → dashboard connection → push-to-deploy (recommended)
 
-**User prompt:**
-```
-What Webflow Cloud templates are available?
-```
+The CLI handles steps 1 and 2. **Step 3 must happen in the Webflow dashboard — the CLI cannot do it.** Without step 3, pushing to GitHub does not deploy.
 
-**Response:**
-```
-📋 Webflow Cloud Templates
+```bash
+# 1. Scaffold locally (CLI)
+webflow cloud init --new --no-input \
+  --project-name my-app \
+  --framework nextjs \
+  --workspace-id ws_abc123
 
-Listing available templates...
-Executing: webflow cloud list
-
-Output:
-Available templates:
-1. astro - Astro framework template
-2. nextjs - Next.js framework template
-
-Use these templates with:
-webflow cloud init -f <template-name>
-
-Example:
-webflow cloud init -f astro -m /app
+# 2. Push to GitHub (CLI / git)
+git init && git add . && git commit -m "init"
+git remote add origin https://github.com/your-org/my-app.git
+git push -u origin main
 ```
 
-### Example 2: Initialize New Cloud Project
-
-**User prompt:**
 ```
-Create a new Webflow Cloud project with Astro
-```
-
-**Step 1: Verify CLI**
-```
-🔍 Webflow CLI Check
-
-Checking CLI installation...
-✓ Webflow CLI installed: v1.5.2
-
-Ready to initialize Webflow Cloud project with Astro.
-
-Options needed:
-1. Mount path (where project will be accessible, e.g., /app)
-2. Site ID (optional - Webflow site to connect to)
-
-Would you like to initialize with default settings (/app mount path)?
+# 3. Connect in the Webflow dashboard (manual, dashboard-only):
+#    a. Open the Cloud project → Settings → Git
+#    b. Connect the GitHub account (if not already), pick the repo
+#    c. Pick the branch to deploy from (e.g. main)
+#    d. Confirm — the dashboard runs an initial deploy to verify the wiring
+#
+# After step 3, every push to the selected branch triggers a deploy automatically.
+# Skip step 3 and push-to-deploy is NOT active — deploys must be manual or CI-driven.
 ```
 
-*User confirms: yes*
+### Project-app workflow: init → first deploy provisions site
 
-**Step 2: Initialize Project**
-```
-🚀 Initializing Webflow Cloud Project
+```bash
+# Agent-safe init — assumes the token sees a single workspace.
+# If the token sees multiple workspaces, ask the user to run this command locally first.
+webflow cloud init --new --no-input \
+  --project-name my-app \
+  --framework astro
 
-Executing: webflow cloud init -f astro -m /app
-
-Output:
-✓ Creating new Astro project
-✓ Installing dependencies
-✓ Configuring Webflow Cloud
-✓ Creating webflow.json
-
-Project initialized!
-
-📁 Project Structure:
-/my-cloud-project/
-├── webflow.json (Cloud configuration)
-├── package.json
-├── src/
-│   └── pages/
-│       └── index.astro
-├── public/
-└── astro.config.mjs
-
-📋 Configuration (webflow.json):
-{
-  "cloud": {
-    "projectId": "", // Will be set on first deploy
-    "framework": "astro"
-  }
-}
-
-✅ Project Ready!
-
-Next Steps:
-1. Build your application: npm run dev
-2. Add your code to src/
-3. Deploy: webflow cloud deploy
+# First deploy creates site + project + environment on the backend,
+# writes siteId / project_id / environment_id back to webflow.json,
+# and writes WEBFLOW_SITE_ID to .env. Subsequent deploys are normal.
+cd my-app
+webflow cloud deploy --no-input \
+  --project-name my-app \
+  --mount / \
+  --environment main \
+  --skip-update-check
 ```
 
-### Example 3: Initialize with Site ID
+### Scaffold a site-attached Astro app locally
 
-**User prompt:**
-```
-Initialize Cloud project with Next.js for site ID abc123
-```
-
-**Response:**
-```
-🚀 Initializing Webflow Cloud Project
-
-Framework: Next.js
-Mount Path: /app
-Site ID: abc123
-
-Executing: webflow cloud init -f nextjs -m /app -s abc123
-
-Output:
-✓ Creating new Next.js project
-✓ Connecting to site: abc123
-✓ Installing dependencies
-✓ Configuring Webflow Cloud
-✓ Creating webflow.json
-✓ Authenticating with site
-
-Project initialized and connected to site!
-
-📋 Configuration (webflow.json):
-{
-  "cloud": {
-    "projectId": "",
-    "framework": "nextjs"
-  }
-}
-
-📁 Environment (.env):
-WEBFLOW_SITE_ID=abc123
-WEBFLOW_SITE_API_TOKEN=************
-
-⚠️ Important: Add .env to your .gitignore file!
-
-✅ Ready to develop and deploy!
+```bash
+webflow cloud init \
+  --no-input \
+  --project-name my-site-app \
+  --framework astro \
+  --mount /app \
+  --site-id site_abc123
 ```
 
-### Example 4: First Deployment
-
-**User prompt:**
-```
-Deploy my Webflow Cloud app
-```
-
-**Step 1: Environment Verification**
-```
-🔍 Webflow Cloud Deployment Check
-
-Checking CLI installation...
-✓ Webflow CLI installed: v1.5.2
-
-Checking project configuration...
-✓ webflow.json found
-✓ Cloud configuration present
-
-Configuration:
-- Framework: astro
-- Project ID: (will be set on first deploy)
-- Mount path: /app
-
-Checking authentication...
-⚠️ No authentication found - will authenticate during deploy
-
-Checking build...
-```
-
-**Step 2: Build**
-```
-🔨 Building Application
-
-Executing: npm run build
-
-Output:
-✓ Building for production
-✓ Compiling pages
-✓ Optimizing assets
-✓ Build complete
-
-Build output: ./dist (1.2 MB)
-```
-
-**Step 3: Deployment Preview**
-```
-📋 Deployment Preview
-
-Project: Acme Cloud App (new deployment)
-Framework: Astro
-Mount Path: /app
-
-First Deployment:
-⚠️ This is your first deployment. The CLI will:
-1. Authenticate with your Webflow site
-2. Create project in Webflow Cloud
-3. Set projectId in webflow.json
-4. Deploy application
-
-⚠️ Type "deploy" to proceed with deployment.
-```
-
-*User confirms: deploy*
-
-**Step 4: Deployment**
-```
-🚀 Deploying to Webflow Cloud
-
-Executing: webflow cloud deploy --no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check
-
-Output:
-✓ Authenticating with Webflow...
-✓ Site authenticated
-✓ Creating Cloud project
-✓ Uploading build artifacts (1.2 MB)
-✓ Deploying to Webflow Cloud
-✓ Deployment complete
-
-✅ Deployment Successful!
-
-Project ID: proj_abc123xyz (added to webflow.json)
-Deployment: https://acme-site.webflow.io/app
-
-📋 Next Steps:
-1. Visit your deployed app at the URL above
-2. Future deploys will use saved project ID
-3. Use: webflow cloud deploy (no re-auth needed)
-4. Publish your site to make changes live
-
-Updated webflow.json:
-{
-  "cloud": {
-    "projectId": "proj_abc123xyz",
-    "framework": "astro"
-  }
-}
-```
-
-### Example 5: Update Existing Deployment
-
-**User prompt:**
-```
-Deploy updates to my Cloud app
-```
-
-**Verification & Build:**
-```
-🔍 Cloud Project Check
-
-✓ webflow.json found
-✓ Project ID: proj_abc123xyz
-✓ Framework: astro
-✓ Authentication: Valid
-
-Building application...
-Executing: npm run build
-✓ Build complete (1.3 MB)
-```
-
-**Preview:**
-```
-📋 Deployment Preview
-
-Project: proj_abc123xyz
-Framework: Astro
-Mount Path: /app
-
-Deployment Type: Update existing project
-Authentication: Using saved credentials
-
-⚠️ Type "deploy" to proceed.
-```
-
-*User confirms: deploy*
-
-**Deployment:**
-```
-🚀 Updating Cloud Deployment
-
-Executing: webflow cloud deploy --no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check
-
-Output:
-✓ Using project: proj_abc123xyz
-✓ Uploading build artifacts (1.3 MB)
-✓ Deploying to Webflow Cloud
-✓ Deployment complete
-
-✅ Deployment Updated!
-
-Live at: https://acme-site.webflow.io/app
-Changes deployed successfully!
-
-💡 Publish your site to make updates live.
-```
-
-### Example 6: CI/CD Deployment
-
-**User prompt:**
-```
-How do I deploy in CI/CD pipeline?
-```
-
-**Response:**
-```
-🤖 CI/CD Deployment for Webflow Cloud
-
-For automated deployments, use non-interactive mode with options.
-
-### Setup Steps:
-
-1. **Authenticate Locally First**
-   Run once to create .env file:
-   ```bash
-   webflow auth login
-   ```
-
-2. **Add Credentials to CI/CD**
-   Add these environment variables from .env:
-   - WEBFLOW_SITE_ID
-   - WEBFLOW_SITE_API_TOKEN
-
-3. **Deployment Command**
-   ```bash
-   webflow cloud deploy --no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check --auto-publish
-   ```
-
-### Example: GitHub Actions
+### GitHub Actions CI/CD pipeline (when custom steps are needed)
 
 ```yaml
 name: Deploy to Webflow Cloud
+
 on:
   push:
     branches: [main]
@@ -446,499 +625,208 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
-
-      - name: Install dependencies
-        run: npm install
+          node-version: 20
 
       - name: Install Webflow CLI
-        run: npm install -g @webflow/webflow-cli
+        run: npm install -g @webflow/webflow-cli@next
 
-      - name: Build application
-        run: npm run build
-
-      - name: Deploy to Webflow Cloud
+      - name: Deploy
         run: |
           webflow cloud deploy \
             --no-input \
-            --mount /app \
+            --mount / \
+            --environment main \
             --skip-mount-path-check \
-            --skip-update-check \
-            --auto-publish
+            --skip-update-check
         env:
+          WEBFLOW_API_TOKEN: ${{ secrets.WEBFLOW_API_TOKEN }}
           WEBFLOW_SITE_ID: ${{ secrets.WEBFLOW_SITE_ID }}
-          WEBFLOW_SITE_API_TOKEN: ${{ secrets.WEBFLOW_SITE_API_TOKEN }}
+          # For project apps pre-first-deploy, omit WEBFLOW_SITE_ID
 ```
 
-### Deploy Options:
+### Manual deploy (local / one-off)
 
-**Environment Management:**
 ```bash
-# Deploy to specific environment
-webflow cloud deploy --no-input -e staging -m <MOUNT_PATH> --skip-mount-path-check --skip-update-check
-
-# Deploy to production with auto-publish
-webflow cloud deploy --no-input -e production -m <MOUNT_PATH> --skip-mount-path-check --skip-update-check --auto-publish
-```
-
-**New Project Deployment:**
-```bash
-# Deploy new project with name and description
-webflow cloud deploy --no-input \
-  --project-name "Acme App" \
-  --description "Production deployment" \
-  --mount <MOUNT_PATH> \
+webflow cloud deploy \
+  --no-input \
+  --project-name my-app \
+  --mount / \
+  --environment main \
   --skip-mount-path-check \
-  --skip-update-check \
-  --auto-publish
+  --skip-update-check
 ```
 
-### Key Options:
-- `--env` / `-e` - Environment name
-- `--mount` / `-m` - Mount path (e.g., /app)
-- `--project-name` / `-p` - Project name (new projects)
-- `--directory` / `-d` - Project directory path
-- `--description` - Project description
-- `--skip-mount-path-check` - No prompts
-- `--auto-publish` - Publish after deploy
+### Manual deploy with error handling
 
-⚠️ Security:
-- Never commit .env files
-- Use CI/CD secrets for credentials
-- Rotate tokens regularly
+```bash
+webflow cloud deploy --no-input --mount / --skip-mount-path-check --skip-update-check
+if [ $? -ne 0 ]; then
+  echo "Deploy failed. Log file:"
+  webflow log
+  exit 1
+fi
 ```
 
 ## Guidelines
 
-### Phase 1: Operation Detection
+### Init vs Deploy in CI
 
-**Determine User Intent:**
-Ask clarifying questions if unclear:
-- "Do you want to create a new Cloud project or deploy an existing one?"
-- "Which framework would you like to use? (Run 'webflow cloud list' to see options)"
+- **`cloud init` is for local, one-time project setup — never run it in CI.** Site-attached mode opens a browser window; there is no headless OAuth path. Run `cloud init` once locally, commit the result, then use `cloud deploy` in CI.
 
-**CLI Verification:**
+### Mount path
+
+- `--mount` is **always required** with `--no-input`. The CLI does not read a saved mount path from `webflow.json`.
+- **Never assume a default.** Assuming `/` or `/app` will cause `ENVIRONMENT_MOUNT_MISMATCH` if the project uses a different path. Check the Webflow dashboard under the project's environment settings.
+
+### Do not add confirmation gates
+
+When `--no-input` is set, do not add a human confirmation step before `cloud deploy`. It blocks unattended CI runs and is unnecessary — the CLI has no built-in prompt to bypass.
+
+### Package manager
+
+The CLI uses **npm only** regardless of lock files present. pnpm and yarn lock files are ignored — those projects silently receive `npm install`.
+
+### Build-time file management
+
+During `cloud deploy`, the CLI temporarily replaces two files and restores them on success or failure:
+- **Framework config** (`next.config.ts` / `astro.config.mjs`) — renamed to `clouduser.*`, replaced with CLI template, then restored.
+- **`wrangler.json`** — replaced with CLI template (original saved to `clouduser.wrangler.json`), then restored. Do not modify `wrangler.json` during a deploy.
+
+If Astro is the framework and `@astrojs/react` is absent, the CLI runs `npm install --save @astrojs/react` without prompting.
+
+### Cloudflare bindings (D1 / KV / R2)
+
+The CLI merges `wrangler.json` bindings at build time. Limits: **max 5 of each type**. For D1, set `migrations_dir` in the binding — the CLI copies migration files automatically.
+
+### Error handling
+
+- The CLI exits with **code 1 on every error**. Check the exit code — do not match on emoji or text patterns in stdout.
+- Use `webflow log` after any failure to get the full error trace.
+
+### Deploy versioning
+
+| Situation | Version tag sent |
+|---|---|
+| Clean working tree | `git@{40-char-hash}` |
+| Uncommitted changes | `git@{40-char-hash}+dirty` |
+| Not in a git repo | `noversion@{ISO-timestamp}` |
+
+Commit all changes before deploying to production.
+
+### Known limitations
+
+- No `cloud status` / `cloud logs` — use the Webflow dashboard.
+- No `cloud env` commands — runtime env vars managed via dashboard only.
+- No `--dry-run` — build validation always triggers a real deployment.
+- No `--json` / structured output — deploy URL and project ID must be parsed from stdout.
+- No `cloud rollback`.
+- **100 MB build size limit** — builds exceeding 104,857,600 bytes fail at upload.
+
+## Troubleshooting
+
+### `--project-name cannot be empty` (or any required-flag error) on `cloud init`
+
+The CLI gates its interactive prompts on `process.stdin.isTTY`. Agents invoke the CLI from a subprocess that does **not** have a TTY, so the prompt block is skipped entirely and the bare validation fires for the first missing required value.
+
+**Fix:** pass every required flag explicitly. For `cloud init`:
+
 ```bash
-# Check CLI installed
-webflow --version
-
-# If not installed:
-npm install -g @webflow/webflow-cli
+webflow cloud init --new --no-input --project-name my-app --framework astro
+# or, site-attached:
+webflow cloud init --no-input --project-name my-app --framework astro --mount /app --site-id site_abc123
 ```
 
-### Phase 2A: Template Listing
+Passing `--no-input` is not strictly required for the prompts to be skipped — the absent TTY already does that — but it makes the contract explicit and matches the Required-flag matrix at the top of this skill.
 
-**List Templates Command:**
+### `cloud init --new` hangs forever / never returns
+
+Workspace selection in project-app mode prompts unconditionally when the token sees more than one workspace. On stable builds, there is no `--workspace-id` flag and no non-TTY fallback, so in a non-TTY context the CLI hangs at the prompt. On `@next` builds, pass `--workspace-id` to skip the picker.
+
+**Fix:** pass `--workspace-id <id>` to `cloud init --new`. The workspace ID is not visible in the Webflow dashboard UI, so when the agent doesn't have one, ask the user to run `webflow cloud deploy` interactively from inside an existing project. The `@next` preflight prompt picks a workspace and writes `cloud.workspace_id` to `webflow.json` — the agent can then read it and pass `--workspace-id` on future runs. Single-workspace tokens are not affected — selection is auto-skipped.
+
+### Deploy provisioned a new site when I expected site-attached
+
+**Symptom:** user wanted to deploy to an existing Webflow site, but `cloud deploy` printed `Creating Cloud app...` / `Cloud app created: <name>` and the live URL came out as `<name>-<hash>.webflow.io` (a freshly minted site) instead of the user's intended site.
+
+**Cause:** `webflow.json` was in the project-app init state — `cloud.workspace_id` set, `siteId` absent — typically because the project was previously scaffolded with `cloud init --new`. On stable builds the deploy reads intent from the manifest only; on `@next` the preflight phase prefers explicit flags but still falls through to the manifest when none are passed.
+
+**Prevention (current `@next` builds, primary fix):** pass `--site-id <existing-site-id>` to `cloud deploy`. The preflight phase resolves identity from flags first, so this overrides whatever's in `webflow.json` and routes the deploy to the intended Webflow site. The skill should always pass `--site-id` when site-attached intent is known.
+
 ```bash
-# Show available templates
-webflow cloud list
-
-# Output shows available frameworks (astro, nextjs)
+webflow cloud deploy --no-input \
+  --site-id site_abc123 \
+  --mount /app --environment main \
+  --skip-mount-path-check --skip-update-check
 ```
 
-**Template Information:**
-- **Astro**: Static site generator, great for content-focused sites
-- **Next.js**: React framework, supports SSR and SSG
+**Recovery if the new site was already created:**
 
-### Phase 2B: Project Initialization
+- **Keep the new project-app site** the deploy just created — do nothing; subsequent deploys will go to the same site (or pass `--site-id` of the new site if there's any ambiguity).
+- **Re-target an existing Webflow site instead.** The auto-provisioned site cannot be re-bound to an existing site after creation. Options:
+  1. Delete the project app (and its auto-provisioned site) from the Webflow dashboard.
+  2. Either edit `webflow.json` (remove `cloud.workspace_id`, `cloud.project_id`, `cloud.environment_id`, `siteId`) and re-run `cloud init` with `--site-id <existing-site-id>`, or skip the manifest edit and run `cloud deploy --site-id <existing-site-id>` directly — the preflight will treat this as a fresh site-attached deploy.
 
-**Init Command Structure:**
+### Auth error on deploy
+
+Run `webflow auth login` and complete the browser flow. The CLI writes a new `WEBFLOW_API_TOKEN` to `.env`. Retry the deploy after login.
+
+In CI, browser auth is not possible — an auth error means `WEBFLOW_API_TOKEN` is missing or expired in your secrets. Fix the secret, do not attempt `webflow auth login`. If the CI uses the legacy `WEBFLOW_SITE_API_TOKEN`, the deploy will still work but the run log shows a deprecation warning; rename the secret to `WEBFLOW_API_TOKEN` to clear it.
+
+### Deploying to a different workspace
+
+For **project apps (`--new`)** on `@next`: pass `--workspace-id <new-id>` to `cloud init` or `cloud deploy` to override `cloud.workspace_id` in `webflow.json`. On stable builds, delete `cloud.workspace_id` from `webflow.json` and re-run init (or interactive deploy on an existing project) to re-seed it.
+
+For **site-attached projects**, workspace context is implicit in the auth token. Re-run `webflow auth login` and select the target workspace in the browser; the new token replaces the old one in `.env`.
+
+### First project-app deploy fails with `missing_scopes`
+
+The token saved to `.env` doesn't include the scopes needed to create a Cloud app. Re-run `webflow auth login` and re-approve the scopes, then retry the deploy.
+
+### First project-app deploy fails: "your workspace has reached its app limit"
+
+The selected workspace (`cloud.workspace_id`) is at its app cap. Either upgrade the workspace plan or delete unused apps in the Webflow dashboard, then retry.
+
+### First project-app deploy fails with workspace-not-found / 404
+
+The workspace ID (from `--workspace-id` flag, or `cloud.workspace_id` in `webflow.json`) no longer resolves — workspace deleted, or token has no access. The CLI on `@next` doesn't validate the flag up front: it trusts the value and surfaces the 404 from `createCloudApp`. Fixes:
+
+- Pass `--workspace-id <correct-id>` to `cloud init` or `cloud deploy`.
+- Or delete `cloud.workspace_id` from `webflow.json` and either re-run `cloud init --new --workspace-id <id>` (empty directory) or run `webflow cloud deploy` interactively (existing project) so the preflight prompt re-seeds the workspace ID.
+
+### `ENVIRONMENT_MOUNT_MISMATCH`
+
+The `--mount` value does not match the path registered for that environment. Check the Webflow dashboard under the project's environment settings for the correct mount path and pass it explicitly.
+
+### Framework cannot be detected / explicit framework required
+
+On `@next` builds, a `webflow.json` that has a `cloud` block but no `framework` key no longer throws — the CLI falls back to detecting from `package.json`. The legacy error _"webflow.json exists but doesn't contain valid framework information"_ only fires on older stable builds and on Node entries that explicitly set `cloud.framework` to an unsupported value.
+
+If framework detection still fails (monorepo, missing framework dependency, ambiguous setup), fix it with the new `--framework` flag on `cloud deploy`:
+
 ```bash
-# Basic init with framework
-webflow cloud init -f <framework>
-
-# With mount path
-webflow cloud init -f astro -m /app
-
-# With site ID (connects to specific site)
-webflow cloud init -f nextjs -m /app -s <site-id>
+webflow cloud deploy --no-input --framework nextjs --mount /app --environment main ...
 ```
 
-**Init Options:**
-- `--framework` / `-f` (required): astro or nextjs
-- `--mount` / `-m`: Mount path (default prompts)
-- `--site-id` / `-s`: Connect to specific site
+This writes `cloud.framework` back into `webflow.json` so subsequent deploys don't need the flag. Or just edit the manifest manually:
 
-**After Init:**
-1. Verify webflow.json created
-2. Check cloud configuration
-3. Show project structure
-4. Guide user to next steps (build, develop, deploy)
-
-### Phase 2C: Project Validation
-
-**webflow.json Cloud Schema:**
 ```json
 {
   "cloud": {
-    "projectId": "<Project ID>",  // Auto-set on first deploy
-    "framework": "astro"           // or "nextjs"
+    "framework": "nextjs"
   }
 }
 ```
 
-**Configuration Fields:**
-- **projectId**: Cloud project identifier (automatically set by CLI on first deploy)
-- **framework**: Framework preset - either "nextjs" or "astro"
-- **mount path**: NOT stored in webflow.json by the CLI. You must ask the user for it if deploying an existing project.
+Valid values: `nextjs`, `astro`. Any other value exits with code 1.
 
-**Authentication Check:**
-```bash
-# Site authentication creates .env file
-# Check for:
-cat .env
-
-# Should contain:
-# WEBFLOW_SITE_ID=your-site-id
-# WEBFLOW_SITE_API_TOKEN=your-token
-
-# If missing, authenticate:
-webflow auth login
-```
-
-### Phase 3: Build Process
-
-**Build Command:**
-```bash
-# Use project's build script
-npm run build
-# or
-yarn build
-# or
-pnpm build
-
-# Check for errors
-echo $?  # 0 = success
-```
-
-**Build Validation:**
-- Check build output directory exists
-- Verify no critical errors
-- Confirm assets generated
-
-### Phase 4: Deployment Preview
-
-**Preview Format:**
-```
-📋 Deployment Preview
-
-Project: [Name or "New Project"]
-Framework: [astro/nextjs]
-Mount Path: [Path if specified]
-Environment: [Name if specified]
-
-[First time: Explain authentication flow]
-[Subsequent: Show project ID]
-
-Options:
-- Auto-publish: [Yes/No]
-- Environment: [Name or default]
-
-⚠️ Type "deploy" to proceed
-```
-
-**First-Time Deployment:**
-Explain clearly:
-1. Browser will open for authentication
-2. Select your Webflow site
-3. Project ID will be created and saved
-4. Future deploys use saved project ID
-
-### Phase 5: Deployment Execution
-
-**Deploy Command:**
-
-IMPORTANT: The Webflow CLI is interactive by default. Always use `--no-input` and `--mount` together to avoid interactive prompts that agents cannot handle.
+### Build fails, need full trace
 
 ```bash
-# Standard non-interactive deploy (use this by default)
-webflow cloud deploy --no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check
-
-# With auto-publish (publishes site after deploy)
-webflow cloud deploy --no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check --auto-publish
-
-# New project with name (first deploy)
-webflow cloud deploy --no-input \
-  --project-name "My App" \
-  --mount <MOUNT_PATH> \
-  --skip-mount-path-check \
-  --skip-update-check
-
-# With specific environment
-webflow cloud deploy --no-input \
-  -e production \
-  --mount <MOUNT_PATH> \
-  --skip-mount-path-check \
-  --skip-update-check \
-  --auto-publish
+webflow log
 ```
 
-**Deploy Options:**
-- `--no-input`: REQUIRED for agents — disables all interactive prompts
-- `--mount` / `-m`: REQUIRED — path to mount project. Must match the existing environment's mount path.
-- `--skip-mount-path-check`: REQUIRED for agents — skips interactive mount path validation
-- `--skip-update-check`: RECOMMENDED — skips interactive package update check
-- `--auto-publish`: Publish the site after deployment
-- `-e` / `--environment`: Environment name to deploy to
-- `--project-name` / `-p`: Project name (for new projects)
-- `--directory` / `-d`: Project directory if not in root
-- `--description`: Project description (for new projects)
-
-**Success Indicators:**
-- Build artifacts uploaded
-- Deployment completed
-- Project ID saved (first time)
-- Site URL available
-
-**Verification:**
-1. Check CLI output for success
-2. Verify project ID added to webflow.json (first time)
-3. Confirm deployment URL works
-4. Note if site needs to be published
-
-### Error Handling
-
-**CLI Not Installed:**
-```
-❌ Webflow CLI Not Found
-
-The Webflow CLI is required for Webflow Cloud.
-
-Installation:
-npm install -g @webflow/webflow-cli
-
-After installation, verify:
-webflow --version
-
-Documentation: https://developers.webflow.com/cli
-```
-
-**Not Authenticated:**
-```
-❌ Not Authenticated
-
-You must authenticate with Webflow to deploy to Cloud.
-
-Steps:
-1. Run: webflow auth login
-2. Follow authentication prompts in browser
-3. Select your site when prompted
-4. Verify: .env file created with WEBFLOW_SITE_ID and WEBFLOW_SITE_API_TOKEN
-5. Retry deployment
-
-Need help? https://developers.webflow.com/cli/authentication
-```
-
-**Not a Cloud Project:**
-```
-❌ Not a Webflow Cloud Project
-
-This directory doesn't appear to be a Cloud project.
-
-Initialize Cloud Project:
-1. List templates: webflow cloud list
-2. Initialize: webflow cloud init -f <framework>
-   Example: webflow cloud init -f astro -m /app
-
-Or check webflow.json for cloud configuration:
-{
-  "cloud": {
-    "framework": "astro" or "nextjs"
-  }
-}
-```
-
-**Build Failures:**
-```
-❌ Build Failed
-
-Error: [Specific error message]
-
-Common Fixes:
-- Missing dependencies: Run npm install
-- Build script errors: Check package.json build script
-- Framework errors: Review framework documentation
-- Path issues: Verify file paths and imports
-
-Show build output for details.
-```
-
-**Deployment Failures:**
-```
-❌ Deployment Failed
-
-Error: [Specific error from CLI]
-
-Possible Causes:
-- Network connection issues
-- Authentication expired
-- Build artifacts missing or invalid
-- Insufficient permissions
-
-Solutions:
-1. Check internet connection
-2. Re-authenticate: webflow auth login
-3. Rebuild: npm run build
-4. Verify webflow.json configuration
-5. Check site permissions in Webflow dashboard
-
-Retry deployment? (yes/no)
-```
-
-**Invalid Framework:**
-```
-❌ Invalid Framework
-
-Framework must be either "astro" or "nextjs".
-
-Available templates:
-Run: webflow cloud list
-
-Initialize with valid framework:
-webflow cloud init -f astro
-webflow cloud init -f nextjs
-```
-
-### File Operations
-
-**Reading Files:**
-Always use Read tool (never modify):
-```
-# View Cloud configuration
-Read: webflow.json
-
-# View package configuration
-Read: package.json
-
-# View environment (if exists)
-Read: .env
-
-# View build output
-Read: dist/ or .next/ or .output/
-```
-
-**Discovering Files:**
-Use Glob tool to find files:
-```
-# Find configuration files
-Glob: *.json
-
-# Find build output
-Glob: dist/**/*
-
-# Find source files
-Glob: src/**/*
-```
-
-**Never Use Write/Edit Tools:**
-- Don't create webflow.json with Write (show user the structure)
-- Don't modify configuration files
-- Let CLI handle file creation
-- Only read files to show content
-
-### Progress Indicators
-
-**For Build:**
-```
-🔨 Building Application...
-
-Compiling pages... ✓
-Optimizing assets... ✓
-Generating build... ⏳
-
-Elapsed: 15s
-```
-
-**For Deployment:**
-```
-🚀 Deploying to Webflow Cloud...
-
-Uploading artifacts... ✓
-Deploying application... ⏳
-Configuring routes... ⏳
-
-Uploaded: 1.2 MB
-Elapsed: 25s
-```
-
-### Best Practices
-
-**Project Setup:**
-- Use `cloud list` to see available templates before init
-- Choose framework based on project needs
-- Specify mount path during init
-- Connect to site ID if already created
-
-**Development:**
-- Build locally before deploying
-- Test thoroughly in dev environment
-- Use environment variables for configuration
-
-**Deployment:**
-- Always build before deploying
-- Always use `--no-input --mount <MOUNT_PATH> --skip-mount-path-check --skip-update-check` for non-interactive deploys
-- Use `--auto-publish` for production deployments
-- Test deployment before publishing site
-
-**CI/CD:**
-- Store credentials in secrets
-- Always use `--no-input` to disable all interactive prompts
-- Always specify `--mount` with the correct path
-- Enable auto-publish for production
-- Use `--skip-mount-path-check` and `--skip-update-check`
-
-**Environment Management:**
-- Use .env for local development
-- Add .env to .gitignore
-- Use CI/CD secrets for production
-- Rotate tokens regularly
-
-## Quick Reference
-
-**Workflow:** list templates → init project → build → deploy
-
-**Key Commands:**
-- `webflow cloud list` - List available templates
-- `webflow cloud init` - Initialize new project
-- `webflow cloud deploy` - Deploy application
-
-**Init Options:**
-- `-f` / `--framework` - Framework (astro, nextjs)
-- `-m` / `--mount` - Mount path
-- `-s` / `--site-id` - Site ID
-
-**Deploy Options (for agents/automation, always include first 4):**
-- `--no-input` - REQUIRED: disable interactive prompts
-- `-m` / `--mount` - REQUIRED: mount path (must match existing environment)
-- `--skip-mount-path-check` - REQUIRED: skip mount path validation prompt
-- `--skip-update-check` - RECOMMENDED: skip update check prompt
-- `--auto-publish` - Publish after deploy
-- `-e` / `--environment` - Environment name
-- `-p` / `--project-name` - Project name (new projects)
-
-**Configuration:** webflow.json with cloud section
-
-**Schema:**
-```json
-{
-  "cloud": {
-    "projectId": "proj_xxx", // auto-set
-    "framework": "astro"      // or "nextjs"
-  }
-}
-```
-
-**Authentication:** Site authentication via `webflow auth login`
-
-**Environment:** WEBFLOW_SITE_ID and WEBFLOW_SITE_API_TOKEN in .env
-
-**Verification:** Check `webflow --version` and site authentication first
-
-**Confirmation:** Require "deploy" keyword before deployment
-
-**Documentation:** https://developers.webflow.com/webflow-cloud/intro
+Prints the path to the latest log file with the full error trace.
