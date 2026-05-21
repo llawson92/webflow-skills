@@ -185,7 +185,7 @@ With no `--no-input` and no identity flags, the `@next` preflight prompts: *"Thi
    ```
 
    - **Single-workspace tokens:** the CLI auto-selects the only workspace, writes `cloud.workspace_id` to `webflow.json`, and exits 0. Read it back from the manifest and pass it as `--workspace-id` to `cloud deploy` in step 2.
-   - **Multi-workspace tokens:** the workspace picker fires and the command hangs (no TTY). The Bash tool's timeout will fire, or kill the process manually after a few seconds with no output. Once you've confirmed the hang, ask the user for the workspace ID directly. Then re-run with `--workspace-id`.
+   - **Multi-workspace tokens:** the workspace picker fires and the command hangs (no TTY). **Set a 30-second timeout on the Bash call** (or wrap the command in `timeout 30s ...`) — a successful single-workspace init completes in 10–20 seconds (OAuth check + `GET /v2/workspaces` + scaffold download from GitHub), so anything past 30s with no output is the picker hanging. Once the timeout fires, ask the user for the workspace ID directly and re-run with `--workspace-id`.
 
    For **site-attached** in Path A2, there is no equivalent auto-discovery — `--site-id` is always required up front. Use the [site picker](#picking-a-site-id-from-a-list) pattern below to help the user pick.
 
@@ -193,10 +193,10 @@ With no `--no-input` and no identity flags, the `@next` preflight prompts: *"Thi
 
 #### Picking a `--site-id` from a list
 
-When `--site-id` is needed (Path A1 site-attached, Path A2 site-attached, or anywhere else) and the user hasn't given one, use `webflow sites list --json` to enumerate sites the token can see, then present a short list of readable names for the user to choose from. The site ID is visible in the Webflow dashboard URL config, but a numeric-ID prompt is bad UX; surface display names instead unles asked for IDs.
+When `--site-id` is needed (Path A1 site-attached, Path A2 site-attached, or anywhere else) and the user hasn't given one, use `webflow sites list --json` to enumerate sites the token can see, then present a short list of readable names for the user to choose from. The site ID is visible in the Webflow dashboard URL config, but a numeric-ID prompt is bad UX; surface display names instead unless asked for IDs.
 
 ```bash
-# Returns one JSON array per site with id, displayName, lastPublished, etc.
+# Returns a JSON array of sites with id, displayName, lastPublished, etc.
 webflow sites list --json
 ```
 
