@@ -1,6 +1,6 @@
 {
   "name": "webflow",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Production-ready agent skills for Webflow - CMS management, site auditing, Designer tools, Code Components, CLI workflows, and safe publishing",
   "author": {
     "name": "Webflow",

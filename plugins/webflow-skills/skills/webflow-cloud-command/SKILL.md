@@ -62,7 +62,9 @@ git remote get-url origin 2>/dev/null
 >
 > `--site-id`, `--project-id`, `--framework`, and `--workspace-id` on `cloud deploy` are new — they let agents override what's in `webflow.json` at deploy time. `--workspace-id` (on both init and deploy) is currently `@next`-only and will become unconditional once `@next` promotes to `@latest`.
 >
-> **Multi-workspace tokens used to be an agent-fatal hang** because workspace selection had no non-TTY path. Now pass `--workspace-id` to skip the picker. **The workspace ID is not surfaced anywhere in the Webflow dashboard UI** — users can't look it up by hand. If the agent doesn't have it, ask the user to run `webflow cloud deploy` interactively once from inside their project. The `@next` preflight prompts for workspace selection and writes `cloud.workspace_id` to `webflow.json`; from that point the agent can read it from the manifest and pass `--workspace-id` on subsequent runs. Do **not** suggest `cloud init --new` for ID discovery — on an existing project it creates a discarded scratch directory.
+> **Multi-workspace tokens used to be an agent-fatal hang** because workspace selection had no non-TTY path. Now pass `--workspace-id` to skip the picker. **The workspace ID is not surfaced anywhere in the Webflow dashboard UI** — users can't look it up by hand. If the agent doesn't have it, ask the user to run `webflow cloud deploy` interactively once from inside their project. The `@next` preflight prompts for workspace selection and writes `cloud.workspace_id` to `webflow.json`; from that point the agent can read it from the manifest and pass `--workspace-id` on subsequent runs. Do **not** suggest `cloud init --new` for ID discovery — on an existing project it creates a discarded scratch directory. **Exception:** in Path A2 (empty directory) it *is* safe to try `cloud init --new` without `--workspace-id` to auto-resolve a single-workspace token — see [Path A2](#path-a2-empty-directory-scaffold-from-scratch).
+>
+> **Site IDs are visible in the dashboard.** When `--site-id` is needed but unknown, do not ask the user for a raw `site_XXXX` value — use [`webflow sites list`](#picking-a-site-id-from-a-list) to fetch their sites and present a picker keyed by display name. Users can still check their dashboard to fetch it.
 
 ---
 
@@ -117,6 +119,8 @@ webflow cloud deploy --no-input \
 
 `--framework` is optional if `package.json` has the framework's Cloudflare adapter (`@opennextjs/cloudflare`, `@astrojs/cloudflare`). Pass it explicitly for monorepos or when auto-detection is unreliable.
 
+If the agent doesn't know the user's `--site-id`, do **not** ask for a raw `site_XXXX` value — use [`webflow sites list`](#picking-a-site-id-from-a-list) to fetch the user's sites and present readable display names to pick from.
+
 **A1-b — Project app, `--workspace-id` is known:**
 
 ```bash
@@ -169,7 +173,49 @@ With no `--no-input` and no identity flags, the `@next` preflight prompts: *"Thi
      --site-id site_abc123
    ```
 
-   See [`cloud init`](#webflow-cloud-init) for all flags. If you don't have `--site-id` (site-attached) or `--workspace-id` (app), ask the user before running anything.
+   See [`cloud init`](#webflow-cloud-init) for all flags.
+
+   **Workspace ID discovery for project apps in Path A2 only:** because Path A2 starts from an empty directory, `cloud init --new` creates a fresh scaffold either way — there's nothing to pollute. So if the agent doesn't have `--workspace-id`, it's safe to **try `cloud init --new` without it first**:
+
+   ```bash
+   # Try this first if --workspace-id is unknown (Path A2 only — empty dir)
+   webflow cloud init --new --no-input \
+     --project-name my-app \
+     --framework astro
+   ```
+
+   - **Single-workspace tokens:** the CLI auto-selects the only workspace, writes `cloud.workspace_id` to `webflow.json`, and exits 0. Read it back from the manifest and pass it as `--workspace-id` to `cloud deploy` in step 2.
+   - **Multi-workspace tokens:** the workspace picker fires and the command hangs (no TTY). **Set a 30-second timeout on the Bash call** (or wrap the command in `timeout 30s ...`) — a successful single-workspace init completes in 10–20 seconds (OAuth check + `GET /v2/workspaces` + scaffold download from GitHub), so anything past 30s with no output is the picker hanging. Once the timeout fires, ask the user for the workspace ID directly and re-run with `--workspace-id`.
+
+   For **site-attached** in Path A2, there is no equivalent auto-discovery — `--site-id` is always required up front. Use the [site picker](#picking-a-site-id-from-a-list) pattern below to help the user pick.
+
+   **Path A1 (existing codebase) does not get this trick.** Running `cloud init --new` in an existing project creates a discarded scratch subdirectory. The Path A1 workspace-ID discovery path stays as documented in Path A1-c.
+
+#### Picking a `--site-id` from a list
+
+When `--site-id` is needed (Path A1 site-attached, Path A2 site-attached, or anywhere else) and the user hasn't given one, use `webflow sites list --json` to enumerate sites the token can see, then present a short list of readable names for the user to choose from. The site ID is visible in the Webflow dashboard URL config, but a numeric-ID prompt is bad UX; surface display names instead unless asked for IDs.
+
+```bash
+# Returns a JSON array of sites with id, displayName, lastPublished, etc.
+webflow sites list --json
+```
+
+Workflow:
+
+1. Run `webflow sites list --json`. The CLI exits 0 with a JSON array.
+2. Parse the output. Show the user a short list keyed by `displayName` (and `lastPublished` if the user has many sites). Example:
+
+   ```
+   Which site should this project deploy to?
+
+   1. Acme Marketing  (last published 2 days ago)
+   2. Acme Docs       (last published 3 weeks ago)
+   3. Acme Internal   (never published)
+   ```
+
+3. Map the user's pick back to its `id` field. Pass that as `--site-id`.
+
+If `webflow sites list` errors (auth missing / expired), surface the error and ask the user to run `webflow auth login` locally; do not try to drive it from the agent.
 
 2. **Deploy:** pick the form matching the init form above. Pass `--site-id` (or `--workspace-id` for project-app first deploy) so the deploy can't misread the manifest if something is half-written.
 
