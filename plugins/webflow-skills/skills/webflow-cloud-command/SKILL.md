@@ -18,12 +18,10 @@ webflow --version
 If the command is not found, install it:
 
 ```bash
-npm install -g @webflow/webflow-cli@next
-# or yarn global add @webflow/webflow-cli@next
-# or pnpm add -g @webflow/webflow-cli@next
+npm install -g @webflow/webflow-cli@latest
+# or yarn global add @webflow/webflow-cli@latest
+# or pnpm add -g @webflow/webflow-cli@latest
 ```
-
-> **Use the `@next` dist-tag.** The features described in this skill (`cloud init --new`, project-app first deploy, GitHub-fetched scaffolds, etc.) currently ship on the `@next` tag only. `@latest` is older and missing these commands — installing it will produce confusing "unknown flag" errors. Once the next major release promotes `@next` to `@latest`, this distinction will go away.
 
 Then proceed to state detection.
 
@@ -60,9 +58,9 @@ git remote get-url origin 2>/dev/null
 > | `cloud deploy` (site-attached) | `--no-input --mount <path> --environment <env> --site-id <id>` plus `--project-name` on first deploy |
 > | `cloud deploy` (project app, first deploy) | `--no-input --mount <path> --environment <env> --workspace-id <id> --project-name <name>` |
 >
-> `--site-id`, `--project-id`, `--framework`, and `--workspace-id` on `cloud deploy` are new — they let agents override what's in `webflow.json` at deploy time. `--workspace-id` (on both init and deploy) is currently `@next`-only and will become unconditional once `@next` promotes to `@latest`.
+> `--site-id`, `--project-id`, `--framework`, and `--workspace-id` on `cloud deploy` let agents override what's in `webflow.json` at deploy time.
 >
-> **Multi-workspace tokens used to be an agent-fatal hang** because workspace selection had no non-TTY path. Now pass `--workspace-id` to skip the picker. **The workspace ID is not surfaced anywhere in the Webflow dashboard UI** — users can't look it up by hand. If the agent doesn't have it, ask the user to run `webflow cloud deploy` interactively once from inside their project. The `@next` preflight prompts for workspace selection and writes `cloud.workspace_id` to `webflow.json`; from that point the agent can read it from the manifest and pass `--workspace-id` on subsequent runs. Do **not** suggest `cloud init --new` for ID discovery — on an existing project it creates a discarded scratch directory. **Exception:** in Path A2 (empty directory) it *is* safe to try `cloud init --new` without `--workspace-id` to auto-resolve a single-workspace token — see [Path A2](#path-a2-empty-directory-scaffold-from-scratch).
+> **Multi-workspace tokens used to be an agent-fatal hang** because workspace selection had no non-TTY path. Now pass `--workspace-id` to skip the picker. **The workspace ID is not surfaced anywhere in the Webflow dashboard UI** — users can't look it up by hand. If the agent doesn't have it, ask the user to run `webflow cloud deploy` interactively once from inside their project. The preflight prompts for workspace selection and writes `cloud.workspace_id` to `webflow.json`; from that point the agent can read it from the manifest and pass `--workspace-id` on subsequent runs. Do **not** suggest `cloud init --new` for ID discovery — on an existing project it creates a discarded scratch directory. **Exception:** in Path A2 (empty directory) it *is* safe to try `cloud init --new` without `--workspace-id` to auto-resolve a single-workspace token — see [Path A2](#path-a2-empty-directory-scaffold-from-scratch).
 >
 > **Site IDs are visible in the dashboard.** When `--site-id` is needed but unknown, do not ask the user for a raw `site_XXXX` value — use [`webflow sites list`](#picking-a-site-id-from-a-list) to fetch their sites and present a picker keyed by display name. Users can still check their dashboard to fetch it.
 
@@ -94,7 +92,7 @@ If the user is ambiguous on either question, **ask**. Do not default.
 
 #### Path A1: existing codebase, no Webflow Cloud config yet
 
-The user has working source. `cloud deploy` handles everything — framework detection runs against `package.json`, and on `@next` the preflight phase resolves identity from flags or prompts the user. No `cloud init` needed, no `webflow.json` to hand-write up front.
+The user has working source. `cloud deploy` handles everything — framework detection runs against `package.json`, and the preflight phase resolves identity from flags or prompts the user. No `cloud init` needed, no `webflow.json` to hand-write up front.
 
 **Step 1: One-time auth (human-only).** Tell the user to run this locally; agents cannot drive the browser flow:
 
@@ -144,7 +142,7 @@ webflow cloud deploy --no-input \
 webflow cloud deploy
 ```
 
-With no `--no-input` and no identity flags, the `@next` preflight prompts: *"This project isn't initialized for Webflow Cloud. How would you like to deploy?"* → user picks "Create a new app" → workspace picker → done. After this one human-driven deploy, `cloud.workspace_id` and `siteId` are written to `webflow.json` and `WEBFLOW_SITE_ID` to `.env`. The agent can then run all subsequent deploys with `--site-id` (the newly provisioned site).
+With no `--no-input` and no identity flags, the preflight prompts: *"This project isn't initialized for Webflow Cloud. How would you like to deploy?"* → user picks "Create a new app" → workspace picker → done. After this one human-driven deploy, `cloud.workspace_id` and `siteId` are written to `webflow.json` and `WEBFLOW_SITE_ID` to `.env`. The agent can then run all subsequent deploys with `--site-id` (the newly provisioned site).
 
 > Do **not** ask the user to run `cloud init --new` to "discover" their workspace ID. On an existing project that creates a discarded `./<project-name>/` scratch directory with a hello-world scaffold inside the user's repo. Use the interactive `cloud deploy` path above — it discovers the workspace ID *and* completes the first deploy in the same step.
 
@@ -358,7 +356,7 @@ Other env vars (any mode):
 | `DO_NOT_TRACK` | Set to `1` to opt out of telemetry. |
 | `WEBFLOW_SKIP_UPDATE_CHECKS` | Set to `true` to skip the @webflow package update check. |
 
-> **`WEBFLOW_SITE_ID` env var behaviour differs by build channel.** On stable builds the CLI auto-persists the env var into `webflow.json` (legacy back-compat). On `@next` builds it's **read-only** — used at runtime when no flag or manifest value is set, but never written back to `webflow.json`. Skill consumers on `@next` should not expect `WEBFLOW_SITE_ID=X` to update the manifest.
+> **`WEBFLOW_SITE_ID` env var is read-only.** Used at runtime when no flag or manifest value is set, but never written back to `webflow.json`. Setting `WEBFLOW_SITE_ID=X` in `.env` will not update the manifest — only `cloud init`, `cloud deploy`, and the manifest itself drive that.
 
 > **GitHub Secrets:** use `WEBFLOW_API_TOKEN` for the token in every mode. Also set `WEBFLOW_SITE_ID` for site-attached projects and project apps that have already had their first deploy. Never commit `.env` files. If existing CI uses `WEBFLOW_SITE_API_TOKEN`, rename it — the deploy will still succeed but every run prints a deprecation warning until you switch.
 
@@ -435,7 +433,7 @@ Flags:
 | `--framework <framework>` | `-f` | Must match a scaffold ID from `cloud list`. Currently: `nextjs`, `astro`. |
 | `--mount <path>` | `-m` | Mount path (default `/app` for site-attached, `/` for app). Substituted into config files at scaffold time. Not stored in `webflow.json`. |
 | `--site-id <id>` | `-s` | Required in non-interactive site-attached mode. Mutually exclusive with `--workspace-id`. |
-| `--workspace-id <id>` | `-w` | **`@next` only.** Skips the workspace picker for `--new` (app mode). Mutually exclusive with `--site-id`. |
+| `--workspace-id <id>` | `-w` | Skips the workspace picker for `--new` (app mode). Mutually exclusive with `--site-id`. |
 | `--new` | — | Project-app mode (no site). |
 | `--no-input` | — | CI mode. Requires `--project-name` and `--framework`. Without `--new`, defaults to app behavior. |
 
@@ -456,7 +454,7 @@ webflow cloud init --new --no-input \
 webflow cloud init --new
 ```
 
-> `--workspace-id` is currently `@next`-only. Stable builds silently ignore it and fall through to the picker. If the token sees multiple workspaces and the agent doesn't have a workspace ID, ask the user to run `webflow cloud deploy` interactively from inside their project — the preflight prompt picks a workspace and writes `cloud.workspace_id` to `webflow.json` for subsequent agent-driven runs. The workspace ID is not exposed in the Webflow dashboard UI, so the interactive CLI run is the only practical way to discover it.
+> If the token sees multiple workspaces and the agent doesn't have a workspace ID, ask the user to run `webflow cloud deploy` interactively from inside their project — the preflight prompt picks a workspace and writes `cloud.workspace_id` to `webflow.json` for subsequent agent-driven runs. The workspace ID is not exposed in the Webflow dashboard UI, so the interactive CLI run is the only practical way to discover it.
 
 | | Site-attached | Project app (`--new`) |
 |---|---|---|
@@ -468,9 +466,9 @@ webflow cloud init --new
 | Mount path | Configurable (default `/app`) | Always `/` |
 | DevLink sync | Runs after init | Skipped |
 
-**Workspace selection (project-app mode only):** if `--workspace-id` is **not** passed, the CLI calls `GET /v2/workspaces` to enumerate workspaces the token has access to. Single workspace is auto-selected; multiple workspaces trigger an interactive picker. With `--workspace-id` (`@next` only) the API roundtrip is skipped — the CLI trusts the flag and surfaces a 404 later via `createCloudApp` if it's invalid. The chosen ID is persisted as `cloud.workspace_id` in `webflow.json`.
+**Workspace selection (project-app mode only):** if `--workspace-id` is **not** passed, the CLI calls `GET /v2/workspaces` to enumerate workspaces the token has access to. Single workspace is auto-selected; multiple workspaces trigger an interactive picker. With `--workspace-id` the API roundtrip is skipped — the CLI trusts the flag and surfaces a 404 later via `createCloudApp` if it's invalid. The chosen ID is persisted as `cloud.workspace_id` in `webflow.json`.
 
-**Agent caveat:** if the user's token sees more than one workspace and the agent can't pass `--workspace-id`, the picker fires and hangs in non-TTY contexts. The workspace ID is not visible in the Webflow dashboard UI, so the recovery is: **ask the user to run `webflow cloud deploy` interactively once from inside their project.** The `@next` preflight prompt picks the workspace, completes a first deploy, and writes `cloud.workspace_id` (plus `siteId`, `project_id`, `environment_id`) to `webflow.json`. The agent can then read the workspace ID from the manifest and pass `--workspace-id` (or `--site-id`, now that the site exists) on subsequent runs. To target a different workspace later, delete `cloud.workspace_id` and have the user repeat the interactive deploy.
+**Agent caveat:** if the user's token sees more than one workspace and the agent can't pass `--workspace-id`, the picker fires and hangs in non-TTY contexts. The workspace ID is not visible in the Webflow dashboard UI, so the recovery is: **ask the user to run `webflow cloud deploy` interactively once from inside their project.** The preflight prompt picks the workspace, completes a first deploy, and writes `cloud.workspace_id` (plus `siteId`, `project_id`, `environment_id`) to `webflow.json`. The agent can then read the workspace ID from the manifest and pass `--workspace-id` (or `--site-id`, now that the site exists) on subsequent runs. To target a different workspace later, delete `cloud.workspace_id` and have the user repeat the interactive deploy.
 
 #### webflow cloud create (deprecated)
 
@@ -483,22 +481,22 @@ webflow cloud init --new
 | # | Source | Result |
 |---|---|---|
 | 1 | `--site-id <id>` flag | Site-attached, overrides manifest |
-| 2 | `--workspace-id <id>` flag (`@next` only) | Project-app first deploy, overrides manifest. Mutually exclusive with `--site-id` |
+| 2 | `--workspace-id <id>` flag | Project-app first deploy, overrides manifest. Mutually exclusive with `--site-id` |
 | 3 | `manifest.siteId` (from `webflow.json`) | Site-attached |
-| 4 | `manifest.cloud.workspace_id` (`@next` only) | Project-app first deploy |
-| 5 | `WEBFLOW_SITE_ID` env var | Site-attached (used at runtime only; on `@next` not persisted back to `webflow.json`) |
+| 4 | `manifest.cloud.workspace_id` | Project-app first deploy |
+| 5 | `WEBFLOW_SITE_ID` env var | Site-attached (used at runtime only; not persisted back to `webflow.json`) |
 | 6 | Interactive picker (no `--no-input`) | Choose: create a new app / attach to existing site / cancel |
 | 7 | No match + `--no-input` | Hard error listing required flags |
 
 This preflight phase exists to prevent the project-app deploy path from running and provisioning a Cloud app before identity is locked in — earlier versions could orphan a new Webflow site if any later step failed.
 
-> **Pass `--site-id` or `--workspace-id` explicitly whenever you can.** It defends against half-written manifests and removes the dependence on whatever state `cloud init` happened to leave behind. If the user wants site-attached, pass `--site-id`. For project-app first deploy, pass `--workspace-id` (`@next`).
+> **Pass `--site-id` or `--workspace-id` explicitly whenever you can.** It defends against half-written manifests and removes the dependence on whatever state `cloud init` happened to leave behind. If the user wants site-attached, pass `--site-id`. For project-app first deploy, pass `--workspace-id`.
 
 **Project-app first deploy** (triggered by `--workspace-id` flag or `manifest.cloud.workspace_id`) calls `POST /cosmic/workspaces/:workspace_id/cloudApps` to atomically create a site, project, and environment. On success it writes `siteId`, `cloud.project_id`, and `cloud.environment_id` into `webflow.json`, writes `WEBFLOW_SITE_ID` into `.env`, and forces `--skip-mount-path-check` for that one deploy. Subsequent deploys behave like normal site-attached deploys.
 
 If `--project-name` is omitted on the first project-app deploy, the CLI uses the **cwd folder name** (when 3–39 chars) and falls back to `"Cloud App"`. Provide `--project-name` explicitly in CI to avoid surprises.
 
-**Uninitialized projects** (no `siteId`, no `workspace_id`, no flag) on `@next`: the CLI prompts the user to create a new project app, attach to an existing site, or cancel. With `--no-input` it hard-errors listing the required flags. Agents running with `--no-input` must always supply `--site-id` or `--workspace-id` on the first deploy of an uninitialized project.
+**Uninitialized projects** (no `siteId`, no `workspace_id`, no flag): the CLI prompts the user to create a new project app, attach to an existing site, or cancel. With `--no-input` it hard-errors listing the required flags. Agents running with `--no-input` must always supply `--site-id` or `--workspace-id` on the first deploy of an uninitialized project.
 
 There are two deployment approaches. **GitHub-linked deployment is recommended** — it requires no CI configuration. After a one-time dashboard setup (which the CLI can't do), every push to the connected branch triggers a deploy.
 
@@ -542,7 +540,7 @@ All `cloud deploy` flags:
 | `--environment <env>` | `-e` | Environment name. Creates if it does not exist. Must be passed with `--mount`. |
 | `--project-name <name>` | `-n` | Required on first deploy with `--no-input` when no `cloud.project_id` in `webflow.json`. **Must be 3–39 characters** for project-app first deploy. |
 | `--site-id <id>` | `-s` | **New.** Webflow site ID for site-attached deploys. Overrides `siteId` in `webflow.json`. Mutually exclusive with `--workspace-id`. Use this to recover from a half-written manifest without editing JSON. |
-| `--workspace-id <id>` | `-w` | **`@next` only.** Workspace ID for project-app first deploys. Overrides `cloud.workspace_id` in `webflow.json`. Mutually exclusive with `--site-id`. |
+| `--workspace-id <id>` | `-w` | Workspace ID for project-app first deploys. Overrides `cloud.workspace_id` in `webflow.json`. Mutually exclusive with `--site-id`. |
 | `--project-id <id>` | `-p` | **New.** Cloud project ID. Skips the app picker. Overrides `cloud.project_id` in `webflow.json`. |
 | `--framework <fw>` | `-f` | **New.** Override framework detection. Must be `nextjs` or `astro`. Writes the value back into `webflow.json`. Use when auto-detection from `package.json` is unreliable (monorepos, missing dependencies, etc.). |
 | `--directory <path>` | `-d` | Project directory (default: cwd). Use for monorepos. |
@@ -678,7 +676,7 @@ jobs:
           node-version: 20
 
       - name: Install Webflow CLI
-        run: npm install -g @webflow/webflow-cli@next
+        run: npm install -g @webflow/webflow-cli@latest
 
       - name: Deploy
         run: |
@@ -790,17 +788,17 @@ Passing `--no-input` is not strictly required for the prompts to be skipped — 
 
 ### `cloud init --new` hangs forever / never returns
 
-Workspace selection in project-app mode prompts unconditionally when the token sees more than one workspace. On stable builds, there is no `--workspace-id` flag and no non-TTY fallback, so in a non-TTY context the CLI hangs at the prompt. On `@next` builds, pass `--workspace-id` to skip the picker.
+Workspace selection in project-app mode prompts unconditionally when the token sees more than one workspace. Pass `--workspace-id` to skip the picker; without it, in a non-TTY context the CLI hangs at the prompt.
 
-**Fix:** pass `--workspace-id <id>` to `cloud init --new`. The workspace ID is not visible in the Webflow dashboard UI, so when the agent doesn't have one, ask the user to run `webflow cloud deploy` interactively from inside an existing project. The `@next` preflight prompt picks a workspace and writes `cloud.workspace_id` to `webflow.json` — the agent can then read it and pass `--workspace-id` on future runs. Single-workspace tokens are not affected — selection is auto-skipped.
+**Fix:** pass `--workspace-id <id>` to `cloud init --new`. The workspace ID is not visible in the Webflow dashboard UI, so when the agent doesn't have one, ask the user to run `webflow cloud deploy` interactively from inside an existing project. The preflight prompt picks a workspace and writes `cloud.workspace_id` to `webflow.json` — the agent can then read it and pass `--workspace-id` on future runs. Single-workspace tokens are not affected — selection is auto-skipped.
 
 ### Deploy provisioned a new site when I expected site-attached
 
 **Symptom:** user wanted to deploy to an existing Webflow site, but `cloud deploy` printed `Creating Cloud app...` / `Cloud app created: <name>` and the live URL came out as `<name>-<hash>.webflow.io` (a freshly minted site) instead of the user's intended site.
 
-**Cause:** `webflow.json` was in the project-app init state — `cloud.workspace_id` set, `siteId` absent — typically because the project was previously scaffolded with `cloud init --new`. On stable builds the deploy reads intent from the manifest only; on `@next` the preflight phase prefers explicit flags but still falls through to the manifest when none are passed.
+**Cause:** `webflow.json` was in the project-app init state — `cloud.workspace_id` set, `siteId` absent — typically because the project was previously scaffolded with `cloud init --new`. The preflight phase prefers explicit flags but still falls through to the manifest when none are passed.
 
-**Prevention (current `@next` builds, primary fix):** pass `--site-id <existing-site-id>` to `cloud deploy`. The preflight phase resolves identity from flags first, so this overrides whatever's in `webflow.json` and routes the deploy to the intended Webflow site. The skill should always pass `--site-id` when site-attached intent is known.
+**Prevention (primary fix):** pass `--site-id <existing-site-id>` to `cloud deploy`. The preflight phase resolves identity from flags first, so this overrides whatever's in `webflow.json` and routes the deploy to the intended Webflow site. The skill should always pass `--site-id` when site-attached intent is known.
 
 ```bash
 webflow cloud deploy --no-input \
@@ -824,7 +822,7 @@ In CI, browser auth is not possible — an auth error means `WEBFLOW_API_TOKEN` 
 
 ### Deploying to a different workspace
 
-For **project apps (`--new`)** on `@next`: pass `--workspace-id <new-id>` to `cloud init` or `cloud deploy` to override `cloud.workspace_id` in `webflow.json`. On stable builds, delete `cloud.workspace_id` from `webflow.json` and re-run init (or interactive deploy on an existing project) to re-seed it.
+For **project apps (`--new`)**: pass `--workspace-id <new-id>` to `cloud init` or `cloud deploy` to override `cloud.workspace_id` in `webflow.json`. Alternatively, delete `cloud.workspace_id` from `webflow.json` and re-run init (or interactive deploy on an existing project) to re-seed it.
 
 For **site-attached projects**, workspace context is implicit in the auth token. Re-run `webflow auth login` and select the target workspace in the browser; the new token replaces the old one in `.env`.
 
@@ -838,7 +836,7 @@ The selected workspace (`cloud.workspace_id`) is at its app cap. Either upgrade 
 
 ### First project-app deploy fails with workspace-not-found / 404
 
-The workspace ID (from `--workspace-id` flag, or `cloud.workspace_id` in `webflow.json`) no longer resolves — workspace deleted, or token has no access. The CLI on `@next` doesn't validate the flag up front: it trusts the value and surfaces the 404 from `createCloudApp`. Fixes:
+The workspace ID (from `--workspace-id` flag, or `cloud.workspace_id` in `webflow.json`) no longer resolves — workspace deleted, or token has no access. The CLI doesn't validate the flag up front: it trusts the value and surfaces the 404 from `createCloudApp`. Fixes:
 
 - Pass `--workspace-id <correct-id>` to `cloud init` or `cloud deploy`.
 - Or delete `cloud.workspace_id` from `webflow.json` and either re-run `cloud init --new --workspace-id <id>` (empty directory) or run `webflow cloud deploy` interactively (existing project) so the preflight prompt re-seeds the workspace ID.
@@ -849,7 +847,7 @@ The `--mount` value does not match the path registered for that environment. Che
 
 ### Framework cannot be detected / explicit framework required
 
-On `@next` builds, a `webflow.json` that has a `cloud` block but no `framework` key no longer throws — the CLI falls back to detecting from `package.json`. The legacy error _"webflow.json exists but doesn't contain valid framework information"_ only fires on older stable builds and on Node entries that explicitly set `cloud.framework` to an unsupported value.
+A `webflow.json` that has a `cloud` block but no `framework` key does not throw — the CLI falls back to detecting from `package.json`. The legacy error _"webflow.json exists but doesn't contain valid framework information"_ only fires when `cloud.framework` is explicitly set to an unsupported value.
 
 If framework detection still fails (monorepo, missing framework dependency, ambiguous setup), fix it with the new `--framework` flag on `cloud deploy`:
 
